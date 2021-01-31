@@ -1,4 +1,6 @@
 .idea/
 python/
+__pycache__/
 
 *.todo
+creds.py
