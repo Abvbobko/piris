@@ -1,7 +1,8 @@
 import bank.constants as const
 
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame, \
+    QRadioButton, QGroupBox, QVBoxLayout, QWidget, QGridLayout, QHBoxLayout, QButtonGroup
 from PyQt5.QtCore import Qt
 
 import sys
@@ -35,14 +36,32 @@ class MainWindow(QMainWindow):
         self.name_edit = QLineEdit(self)
         self.name_label.setFrameShape(QFrame.Panel)
         width, height = self.__get_label_text_pixel_size(self.name_label)
-        self.name_edit.move(5 + width + 5, self.surname_edit.height())
+        self.name_edit.move(5 + width + 5, self.name_label.y())
 
         self.patronymic_label = QLabel("Отчество:", self)
         self.patronymic_label.move(5, self.name_edit.height()*2)
         self.patronymic_edit = QLineEdit(self)
         self.patronymic_label.setFrameShape(QFrame.Panel)
         width, height = self.__get_label_text_pixel_size(self.patronymic_label)
-        self.patronymic_edit.move(5 + width + 5, self.name_edit.height()*2)
+        self.patronymic_edit.move(5 + width + 5, self.patronymic_label.y())
+
+        self.sex_label = QLabel("Пол:", self)
+        self.sex_label.move(5, self.patronymic_edit.height() * 3)
+        width, height = self.__get_label_text_pixel_size(self.sex_label)
+
+        layout = QHBoxLayout()  # layout for the central widget
+        widget = QWidget(self)  # central widget
+        widget.setLayout(layout)
+        r_m = QRadioButton("М")
+        r_m.setChecked(True)
+        r_w = QRadioButton("Ж")
+        r_m.setFixedHeight(15)
+        r_w.setFixedHeight(15)
+        layout.addWidget(r_m)
+        layout.addWidget(r_w)
+        widget.move(width+10, self.sex_label.y())
+
+
 
 
     @staticmethod
