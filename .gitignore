@@ -1,6 +1,11 @@
+# environment
 .idea/
 python/
 __pycache__/
 
+# my_files
 *.todo
 creds.py
+
+# db files
+*.bak
