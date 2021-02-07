@@ -2,7 +2,7 @@ WIN_WIDTH = 600
 WIN_HEIGHT = 400
 WIN_TITLE = "BANK"
 
-MODES = {0: "Добавление", 1: "Редактирование"}
+MODES = ["Добавление", "Редактирование", "Удаление"]
 CURRENT_MODE = 0
 
 

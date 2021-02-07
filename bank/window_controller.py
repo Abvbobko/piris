@@ -12,23 +12,25 @@ import os
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, width, height, modes, current_mode=0, title=""):
+    def __init__(self, width, height, title=""):
         super(MainWindow, self).__init__()
         # ToDo: change path from static and move ui to project folder
+        # get lists from db
         self.db = db_controller.DBController(creds.HOST, creds.USER, creds.PASSWORD, creds.DATABASE)
         cities = self.db.get_cities()
         citizenships = self.db.get_citizenships()
         marital_statuses = self.db.get_marital_status()
         disabilities = self.db.get_disabilities()
 
+        # init UI
         ui_path = os.path.abspath('../window_view/window.ui')
         uic.loadUi(ui_path, self)
 
-        self.window_modes = modes
-        self.window_current_mode = current_mode
+        self.window_modes = const.MODES
+        self.window_current_mode = self.window_modes[const.CURRENT_MODE]
 
         self.mode_combobox.clear()
-        self.mode_combobox.addItems(self.window_modes.values())
+        self.mode_combobox.addItems(self.window_modes)
 
         city_names = MainWindow.get_names_from_values(cities)
         self.cities = cities
@@ -54,17 +56,34 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(title)
 
+        # buttons functionality
+        self.add_button.clicked.connect(self.add_button_click)
+        self.mode_combobox.currentTextChanged.connect(self.change_mode)
+
     def change_mode(self, value):
-        pass
+        self.window_current_mode = value
+        if value == self.window_modes[0]:
+            # add mode
+            self.add_button.clicked.disconnect()
+            self.add_button.clicked.connect(self.add_button_click)
+        elif value == self.window_modes[1]:
+            # update mode
+            self.add_button.clicked.disconnect()
+            self.add_button.clicked.connect(self.update_button_click)
+        elif value == self.window_modes[2]:
+            # delete mode
+            self.add_button.clicked.disconnect()
+            self.add_button.clicked.connect(self.delete_button_click)
+        print(f'change on {value}')
 
     def add_button_click(self):
-        pass
+        print('add')
 
     def update_button_click(self):
-        pass
+        print('update')
 
     def delete_button_click(self):
-        pass
+        print('delete')
 
     @staticmethod
     def get_names_from_values(values):
@@ -90,8 +109,6 @@ if __name__ == '__main__':
         width=const.WIN_WIDTH,
         height=const.WIN_HEIGHT,
         title=const.WIN_TITLE,
-        modes=const.MODES,
-        current_mode=const.CURRENT_MODE
     )
     window.show()
     # Start the event loop.
