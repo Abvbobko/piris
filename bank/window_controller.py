@@ -12,10 +12,15 @@ import os
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, cities, citizenships, disabilities, marital_statuses,
-                 width, height, modes, current_mode=0, title=""):
+    def __init__(self, width, height, modes, current_mode=0, title=""):
         super(MainWindow, self).__init__()
         # ToDo: change path from static and move ui to project folder
+        self.db = db_controller.DBController(creds.HOST, creds.USER, creds.PASSWORD, creds.DATABASE)
+        cities = self.db.get_cities()
+        citizenships = self.db.get_citizenships()
+        marital_statuses = self.db.get_marital_status()
+        disabilities = self.db.get_disabilities()
+
         ui_path = os.path.abspath('../window_view/window.ui')
         uic.loadUi(ui_path, self)
 
@@ -49,6 +54,18 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(title)
 
+    def change_mode(self, value):
+        pass
+
+    def add_button_click(self):
+        pass
+
+    def update_button_click(self):
+        pass
+
+    def delete_button_click(self):
+        pass
+
     @staticmethod
     def get_names_from_values(values):
         return [None] + [item[1] for item in values] if values else []
@@ -64,21 +81,12 @@ def except_hook(cls, exception, traceback):
 
 
 if __name__ == '__main__':
-    db = db_controller.DBController(creds.HOST, creds.USER, creds.PASSWORD, creds.DATABASE)
-    cities = db.get_cities()
-    citizenships = db.get_citizenships()
-    marital_statuses = db.get_marital_status()
-    disabilities = db.get_disabilities()
 
     # enable error messages
     sys.excepthook = except_hook
 
     app = QApplication([])
     window = MainWindow(
-        cities=cities,
-        citizenships=citizenships,
-        disabilities=disabilities,
-        marital_statuses=marital_statuses,
         width=const.WIN_WIDTH,
         height=const.WIN_HEIGHT,
         title=const.WIN_TITLE,
