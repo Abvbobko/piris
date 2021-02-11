@@ -119,6 +119,9 @@
       <height>20</height>
      </rect>
     </property>
+    <property name="maxLength">
+     <number>1024</number>
+    </property>
    </widget>
    <widget class="QLineEdit" name="name_edit">
     <property name="geometry">

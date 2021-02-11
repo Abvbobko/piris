@@ -6,6 +6,7 @@ MODES = ["Добавление", "Редактирование", "Удалени
 CURRENT_MODE = 0
 
 NAME_REGEX = "[А-Я][а-я]+"
+MAX_NAME_LENGTH = 255
 
 
 

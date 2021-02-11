@@ -55,8 +55,16 @@ class MainWindow(QMainWindow):
         self.marital_status_combobox.clear()
         self.marital_status_combobox.addItems(marital_statuses_names)
 
-        self.surname_regex = QRegExp(const.NAME_REGEX)
-        self.surname_edit.setValidator(QtGui.QRegExpValidator(self.surname_regex))
+        # add surname, name and patronymic edit filters
+        self.surname_regex = const.NAME_REGEX
+        self.surname_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.surname_regex)))
+        self.surname_edit.setMaxLength(const.MAX_NAME_LENGTH)
+        self.name_regex = const.NAME_REGEX
+        self.name_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.name_regex)))
+        self.name_edit.setMaxLength(const.MAX_NAME_LENGTH)
+        self.patronymic_regex = const.NAME_REGEX
+        self.patronymic_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.patronymic_regex)))
+        self.patronymic_edit.setMaxLength(const.MAX_NAME_LENGTH)
 
         self.setWindowTitle(title)
 
@@ -85,23 +93,46 @@ class MainWindow(QMainWindow):
         message_box = QMessageBox()
         message_box.setIcon(QMessageBox.Critical)
         message_box.setText(error_text)
-        # message_box.setInformativeText("This is additional information")
         message_box.setWindowTitle(error_title)
-        retval = message_box.exec_()
-        # message_box.setDetailedText("The details are as follows:")
+        message_box.exec_()
 
     def validate_fields(self):
-        is_valid, error_message = validator.validate_name(
+        # validate surname
+        error = validator.validate_name(
             name=self.surname_edit.text(), field_name="Фамилия",
-            name_regex=self.surname_regex
+            name_regex=self.surname_regex,
+            max_length=self.surname_edit.maxLength()
         )
-        print("validate fields")
-        if not is_valid:
-            self.call_error_box(error_text=error_message)
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate name
+        error = validator.validate_name(
+            name=self.name_edit.text(), field_name="Имя",
+            name_regex=self.name_regex,
+            max_length=self.name_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate patronymic
+        error = validator.validate_name(
+            name=self.patronymic_edit.text(), field_name="Отчество",
+            name_regex=self.patronymic_regex,
+            max_length=self.patronymic_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        return True
 
     def add_button_click(self):
         print('add')
-        self.validate_fields()
+        if self.validate_fields():
+            print("OK")
 
     def update_button_click(self):
         print('update')
