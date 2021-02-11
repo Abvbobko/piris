@@ -78,6 +78,8 @@ class MainWindow(QMainWindow):
 
     def add_button_click(self):
         print('add')
+        
+
 
     def update_button_click(self):
         print('update')
