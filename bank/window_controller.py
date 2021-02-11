@@ -1,11 +1,12 @@
 import bank.constants as const
 import bank.db_controller as db_controller
 import bank.creds as creds
+import bank.fields_validator as validator
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame, \
-    QRadioButton, QWidget, QHBoxLayout, QDateEdit
-from PyQt5.QtCore import Qt
+    QRadioButton, QWidget, QHBoxLayout, QDateEdit, QMessageBox
+from PyQt5.QtCore import Qt, QRegExp
 
 import sys
 import os
@@ -54,6 +55,9 @@ class MainWindow(QMainWindow):
         self.marital_status_combobox.clear()
         self.marital_status_combobox.addItems(marital_statuses_names)
 
+        self.surname_regex = QRegExp(const.NAME_REGEX)
+        self.surname_edit.setValidator(QtGui.QRegExpValidator(self.surname_regex))
+
         self.setWindowTitle(title)
 
         # buttons functionality
@@ -76,10 +80,28 @@ class MainWindow(QMainWindow):
             self.add_button.clicked.connect(self.delete_button_click)
         print(f'change on {value}')
 
+    def call_error_box(self, error_title="Ошибка", error_text=""):
+        print("ERROR")
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Critical)
+        message_box.setText(error_text)
+        # message_box.setInformativeText("This is additional information")
+        message_box.setWindowTitle(error_title)
+        retval = message_box.exec_()
+        # message_box.setDetailedText("The details are as follows:")
+
+    def validate_fields(self):
+        is_valid, error_message = validator.validate_name(
+            name=self.surname_edit.text(), field_name="Фамилия",
+            name_regex=self.surname_regex
+        )
+        print("validate fields")
+        if not is_valid:
+            self.call_error_box(error_text=error_message)
+
     def add_button_click(self):
         print('add')
-        
-
+        self.validate_fields()
 
     def update_button_click(self):
         print('update')
