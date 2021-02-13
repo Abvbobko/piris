@@ -8,8 +8,12 @@ def is_match_pattern(pattern, string):
     return bool(matched)
 
 
-def validate_name(name, field_name="", name_regex=const.NAME_REGEX, min_length=1, max_length=255):
-    field_name = f" '{field_name}' " if field_name else " "
+def change_field_name(field_name):
+    return f' "{field_name}" ' if field_name else " "
+
+
+def validate_name(name, field_name=None, name_regex=const.NAME_REGEX, min_length=1, max_length=255):
+    field_name = change_field_name(field_name)
 
     if not name:
         return f"Поле{field_name}не может быть пустым."
@@ -26,8 +30,8 @@ def validate_name(name, field_name="", name_regex=const.NAME_REGEX, min_length=1
     return None
 
 
-def date_validator(date, field_name="", min_date=None, max_date=None):
-    field_name = f" '{field_name}' " if field_name else " "
+def date_validator(date, field_name=None, min_date=None, max_date=None):
+    field_name = change_field_name(field_name)
 
     if not date:
         return f"Поле{field_name}не должно быть пустым."
@@ -41,10 +45,19 @@ def date_validator(date, field_name="", min_date=None, max_date=None):
     return None
 
 
-def radio_button_validator(checked_list, field_name="", can_be_empty=False):
-    field_name = f" '{field_name}' " if field_name else " "
+def radio_button_validator(checked_list, field_name=None, can_be_empty=False):
+    field_name = change_field_name(field_name)
 
     if (True not in checked_list) and (not can_be_empty):
+        return f"Поле{field_name}не должно быть пустым."
+
+    return None
+
+
+def combobox_validator(value, field_name=None, can_be_empty=False):
+    field_name = change_field_name(field_name)
+
+    if not value and not can_be_empty:
         return f"Поле{field_name}не должно быть пустым."
 
     return None

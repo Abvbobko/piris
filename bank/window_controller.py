@@ -169,6 +169,53 @@ class MainWindow(QMainWindow):
             self.call_error_box(error_text=error)
             return False
 
+        # validate residence city
+        error = validator.combobox_validator(
+            self.residence_city_combobox.currentText(),
+            field_name="Город факт. проживания"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate registration city
+        error = validator.combobox_validator(
+            self.registration_city_combobox.currentText(),
+            field_name="Город прописки"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate citizenship
+        error = validator.combobox_validator(
+            self.citizenship_combobox.currentText(),
+            field_name="Гражданство"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate marital status
+        error = validator.combobox_validator(
+            self.marital_status_combobox.currentText(),
+            field_name="Семейное положение"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate disability
+        error = validator.combobox_validator(
+            self.disability_combobox.currentText(),
+            field_name="Инвалидность"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+
+
         return True
 
     def add_button_click(self):
