@@ -103,6 +103,20 @@ class MainWindow(QMainWindow):
         self.mobile_phone_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.mobile_phone_regex)))
         self.mobile_phone_edit.setMaxLength(const.MOBILE_PHONE_LENGTH)
 
+        # set passport number and id validators
+        self.passport_number_regex = const.PASSPORT_NUMBER_MASK
+        self.passport_number_edit.setMaxLength(const.PASSPORT_NUMBER_LENGTH)
+        self.passport_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.passport_number_regex)))
+        # +: добавить ограничения на номер паспорта
+        # +: добавить валидатор на номер паспорта
+        # todo: добавить ограничения на ид
+        # todo: добавить валидатор на ид
+        # todo: добавить огрнаничения на доход
+        # todo: добавить валидатор на доход (как строка?)
+        # todo: добавить вызов валидатора доход
+        # todo: добавить вызов валидатора ид
+        # +: добавить вызов валидатора номер паспорта
+
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
@@ -329,6 +343,17 @@ class MainWindow(QMainWindow):
             max_length=self.mobile_phone_edit.maxLength(),
             can_be_empty=True,
             mask=self.mobile_phone_regex
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate passport_number
+        error = validator.string_validator(
+            string=self.passport_number_edit.text(),
+            field_name="Номер паспорта",
+            max_length=self.passport_number_edit.maxLength(),
+            mask=self.passport_number_regex
         )
         if error:
             self.call_error_box(error_text=error)
