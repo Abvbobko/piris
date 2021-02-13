@@ -61,3 +61,14 @@ def combobox_validator(value, field_name=None, can_be_empty=False):
         return f"Поле{field_name}не должно быть пустым."
 
     return None
+
+
+def checkbox_validator(state, field_name=None, is_tristate=False):
+    field_name = change_field_name(field_name)
+
+    if is_tristate and state not in [0, 1, 2]:
+        return f"У поля{field_name}некорректное значение."
+    elif state not in [True, False]:
+        return f"У поля{field_name}некорректное значение."
+
+    return None

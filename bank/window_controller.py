@@ -214,6 +214,15 @@ class MainWindow(QMainWindow):
             self.call_error_box(error_text=error)
             return False
 
+        # validate pension
+        error = validator.checkbox_validator(
+            self.pension_checkbox.isChecked(),
+            field_name="Пенсионер"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
 
 
         return True
