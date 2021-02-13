@@ -160,6 +160,15 @@ class MainWindow(QMainWindow):
             self.call_error_box(error_text=error)
             return False
 
+        # validate sex
+        error = validator.radio_button_validator(
+            checked_list=[self.m_radio_button.isChecked(), self.w_radio_button.isChecked()],
+            field_name="Пол"
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
         return True
 
     def add_button_click(self):
