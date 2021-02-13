@@ -1,5 +1,6 @@
 import re
 import bank.constants as const
+import datetime
 
 
 def is_match_pattern(pattern, string):
@@ -7,12 +8,12 @@ def is_match_pattern(pattern, string):
     return bool(matched)
 
 
-def validate_name(name, field_name="", name_regex=const.NAME_REGEX, min_length=1, max_length=255, can_be_empty=False):
+def validate_name(name, field_name="", name_regex=const.NAME_REGEX, min_length=1, max_length=255):
     # print(max_length)
     if field_name:
         field_name = f" '{field_name}' "
 
-    if not name and not can_be_empty:
+    if not name:
         return f"Поле{field_name}не может быть пустым."
 
     if not is_match_pattern(name_regex, name):
@@ -27,3 +28,17 @@ def validate_name(name, field_name="", name_regex=const.NAME_REGEX, min_length=1
     return None
 
 
+def date_validator(date, field_name="", min_date=None, max_date=None):
+    if field_name:
+        field_name = f" '{field_name}' "
+
+    if not date:
+        return f"Поле{field_name}не должно быть пустым."
+
+    if min_date and date < min_date:
+        return f"Поле{field_name}не должно быть раньше {min_date}."
+
+    if max_date and date > max_date:
+        return f"Поле{field_name}не должно быть позже {max_date}."
+
+    return None

@@ -6,10 +6,11 @@ import bank.fields_validator as validator
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame, \
     QRadioButton, QWidget, QHBoxLayout, QDateEdit, QMessageBox
-from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtCore import Qt, QRegExp, QDate
 
 import sys
 import os
+import datetime
 
 
 class MainWindow(QMainWindow):
@@ -26,6 +27,8 @@ class MainWindow(QMainWindow):
         # init UI
         ui_path = os.path.abspath('../window_view/window.ui')
         uic.loadUi(ui_path, self)
+
+        self.setWindowTitle(title)
 
         self.window_modes = const.MODES
         self.window_current_mode = self.window_modes[const.CURRENT_MODE]
@@ -66,7 +69,15 @@ class MainWindow(QMainWindow):
         self.patronymic_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.patronymic_regex)))
         self.patronymic_edit.setMaxLength(const.MAX_NAME_LENGTH)
 
-        self.setWindowTitle(title)
+        # add dates constraints
+        today = datetime.date.today()
+        min_date = const.MIN_DATE
+        min_date_qdate = QDate(min_date.year, min_date.month, min_date.day)
+        max_date_qdate = QDate(today.year, today.month, today.day)
+        self.birth_date_edit.setMinimumDate(min_date_qdate)
+        self.birth_date_edit.setMaximumDate(max_date_qdate)
+        self.issue_date_edit.setMinimumDate(min_date_qdate)
+        self.issue_date_edit.setMaximumDate(max_date_qdate)
 
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
@@ -122,6 +133,28 @@ class MainWindow(QMainWindow):
             name=self.patronymic_edit.text(), field_name="Отчество",
             name_regex=self.patronymic_regex,
             max_length=self.patronymic_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate birth_date
+        date = self.birth_date_edit.date().toPyDate()
+        min_date = self.birth_date_edit.minimumDate().toPyDate()
+        max_date = self.birth_date_edit.maximumDate().toPyDate()
+        error = validator.date_validator(
+            date=date, field_name="Дата рождения", min_date=min_date, max_date=max_date
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate issue_date
+        date = self.issue_date_edit.date().toPyDate()
+        min_date = self.issue_date_edit.minimumDate().toPyDate()
+        max_date = self.issue_date_edit.maximumDate().toPyDate()
+        error = validator.date_validator(
+            date=date, field_name="Дата выдачи", min_date=min_date, max_date=max_date
         )
         if error:
             self.call_error_box(error_text=error)
