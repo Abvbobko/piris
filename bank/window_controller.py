@@ -2,6 +2,7 @@ import bank.constants as const
 import bank.db_controller as db_controller
 import bank.creds as creds
 import bank.fields_validator as validator
+import bank.data_converter as data_converter
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame, \
@@ -79,6 +80,16 @@ class MainWindow(QMainWindow):
         self.issue_date_edit.setMinimumDate(min_date_qdate)
         self.issue_date_edit.setMaximumDate(max_date_qdate)
 
+        # add constraints for the string edits
+        self.passport_series_regex = const.PASSPORT_SERIES_MASK
+        self.passport_series_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.passport_series_regex)))
+        self.passport_series_edit.setMaxLength(const.MAX_PASSPORT_SERIES_LENGTH)
+
+        self.issued_by_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.birth_place_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.residence_address_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.email_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
@@ -109,34 +120,42 @@ class MainWindow(QMainWindow):
 
     def validate_fields(self):
         # validate surname
-        error = validator.validate_name(
-            name=self.surname_edit.text(), field_name="Фамилия",
-            name_regex=self.surname_regex,
+        error = validator.string_validator(
+            string=self.surname_edit.text(), field_name="Фамилия",
+            mask=self.surname_regex,
             max_length=self.surname_edit.maxLength()
         )
         if error:
             self.call_error_box(error_text=error)
             return False
+        surname = data_converter.convert_name(self.surname_edit.text())
+        self.surname_edit.setText(surname)
 
         # validate name
-        error = validator.validate_name(
-            name=self.name_edit.text(), field_name="Имя",
-            name_regex=self.name_regex,
+        error = validator.string_validator(
+            string=self.name_edit.text(), field_name="Имя",
+            mask=self.name_regex,
             max_length=self.name_edit.maxLength()
         )
         if error:
             self.call_error_box(error_text=error)
             return False
 
+        name = data_converter.convert_name(self.name_edit.text())
+        self.name_edit.setText(name)
+
         # validate patronymic
-        error = validator.validate_name(
-            name=self.patronymic_edit.text(), field_name="Отчество",
-            name_regex=self.patronymic_regex,
+        error = validator.string_validator(
+            string=self.patronymic_edit.text(), field_name="Отчество",
+            mask=self.patronymic_regex,
             max_length=self.patronymic_edit.maxLength()
         )
         if error:
             self.call_error_box(error_text=error)
             return False
+
+        patronymic = data_converter.convert_name(self.patronymic_edit.text())
+        self.patronymic_edit.setText(patronymic)
 
         # validate birth_date
         date = self.birth_date_edit.date().toPyDate()
@@ -223,7 +242,60 @@ class MainWindow(QMainWindow):
             self.call_error_box(error_text=error)
             return False
 
+        # validate passport_series
+        error = validator.string_validator(
+            string=self.passport_series_edit.text(),
+            field_name="Серия паспорта",
+            mask=self.passport_series_regex,
+            max_length=self.passport_series_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
 
+        passport_series = data_converter.to_upper(self.passport_series_edit.text())
+        self.passport_series_edit.setText(passport_series)
+
+        # validate issued_by
+        error = validator.string_validator(
+            string=self.issued_by_edit.text(),
+            field_name="Кем выдан",
+            max_length=self.issued_by_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate birth_place
+        error = validator.string_validator(
+            string=self.birth_place_edit.text(),
+            field_name="Место рождения",
+            max_length=self.birth_place_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate residence_address
+        error = validator.string_validator(
+            string=self.residence_address_edit.text(),
+            field_name="Адрес факт. проживания",
+            max_length=self.residence_address_edit.maxLength()
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate email
+        error = validator.string_validator(
+            string=self.email_edit.text(),
+            field_name="Email",
+            max_length=self.email_edit.maxLength(),
+            can_be_empty=True
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
 
         return True
 

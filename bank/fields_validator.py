@@ -12,19 +12,22 @@ def change_field_name(field_name):
     return f' "{field_name}" ' if field_name else " "
 
 
-def validate_name(name, field_name=None, name_regex=const.NAME_REGEX, min_length=1, max_length=255):
+def string_validator(string, field_name=None, mask=None, min_length=None, max_length=None, can_be_empty=False):
     field_name = change_field_name(field_name)
 
-    if not name:
+    if not string and not can_be_empty:
         return f"Поле{field_name}не может быть пустым."
 
-    if not is_match_pattern(name_regex, name):
+    if can_be_empty and len(string) == 0:
+        return None
+
+    if mask and not is_match_pattern(mask, string):
         return f"Поле{field_name}должно состоять только из букв и начинаться с заглавной буквы."
 
-    if len(name) < min_length:
+    if min_length and len(string) < min_length:
         return f"Поле{field_name}должно быть не меньше чем {min_length} символом."
 
-    if len(name) > max_length:
+    if max_length and len(string) > max_length:
         return f"Поле{field_name}должно не должно быть длиннее чем {max_length} символов."
 
     return None
