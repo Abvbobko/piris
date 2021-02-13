@@ -387,7 +387,7 @@
      <enum>Qt::AutoText</enum>
     </property>
    </widget>
-   <widget class="QLineEdit" name="home_phone_label_2">
+   <widget class="QLineEdit" name="home_phone_edit">
     <property name="geometry">
      <rect>
       <x>150</x>

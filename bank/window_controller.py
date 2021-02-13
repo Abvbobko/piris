@@ -90,6 +90,19 @@ class MainWindow(QMainWindow):
         self.residence_address_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
         self.email_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
 
+        # phone number validators
+        placeholder = const.HOME_PHONE_PLACEHOLDER
+        self.home_phone_regex = const.HOME_PHONE_MASK
+        self.home_phone_edit.setPlaceholderText(placeholder)
+        self.home_phone_edit.setMaxLength(len(placeholder))
+        self.home_phone_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.home_phone_regex)))
+
+        placeholder = const.MOBILE_PHONE_PLACEHOLDER
+        self.mobile_phone_regex = const.MOBILE_PHONE_MASK
+        self.mobile_phone_edit.setPlaceholderText(placeholder)
+        self.mobile_phone_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.mobile_phone_regex)))
+        self.mobile_phone_edit.setMaxLength(const.MOBILE_PHONE_LENGTH)
+
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
@@ -292,6 +305,30 @@ class MainWindow(QMainWindow):
             field_name="Email",
             max_length=self.email_edit.maxLength(),
             can_be_empty=True
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate home_phone
+        error = validator.string_validator(
+            string=self.home_phone_edit.text(),
+            field_name="Телефон домашний",
+            max_length=self.home_phone_edit.maxLength(),
+            can_be_empty=True,
+            mask=self.home_phone_regex
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate mobile_phone
+        error = validator.string_validator(
+            string=self.mobile_phone_edit.text(),
+            field_name="Телефон мобильный",
+            max_length=self.mobile_phone_edit.maxLength(),
+            can_be_empty=True,
+            mask=self.mobile_phone_regex
         )
         if error:
             self.call_error_box(error_text=error)

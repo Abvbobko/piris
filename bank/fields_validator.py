@@ -22,7 +22,7 @@ def string_validator(string, field_name=None, mask=None, min_length=None, max_le
         return None
 
     if mask and not is_match_pattern(mask, string):
-        return f"Поле{field_name}должно состоять только из букв и начинаться с заглавной буквы."
+        return f"Поле{field_name}заполнено некорректно."
 
     if min_length and len(string) < min_length:
         return f"Поле{field_name}должно быть не меньше чем {min_length} символом."
