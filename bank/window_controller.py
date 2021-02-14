@@ -107,15 +107,10 @@ class MainWindow(QMainWindow):
         self.passport_number_regex = const.PASSPORT_NUMBER_MASK
         self.passport_number_edit.setMaxLength(const.PASSPORT_NUMBER_LENGTH)
         self.passport_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.passport_number_regex)))
-        # +: добавить ограничения на номер паспорта
-        # +: добавить валидатор на номер паспорта
-        # todo: добавить ограничения на ид
-        # todo: добавить валидатор на ид
-        # todo: добавить огрнаничения на доход
-        # todo: добавить валидатор на доход (как строка?)
-        # todo: добавить вызов валидатора доход
-        # todo: добавить вызов валидатора ид
-        # +: добавить вызов валидатора номер паспорта
+
+        self.identification_number_regex = const.PASSPORT_ID_MASK
+        self.identification_number_edit.setMaxLength(const.PASSPORT_ID_LENGTH)
+        self.identification_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.identification_number_regex)))
 
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
@@ -354,6 +349,21 @@ class MainWindow(QMainWindow):
             field_name="Номер паспорта",
             max_length=self.passport_number_edit.maxLength(),
             mask=self.passport_number_regex
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate passport_id
+        birth_date = self.birth_date_edit.date().toPyDate()
+        sex = 0 if self.m_radio_button.isChecked() else 1
+        error = validator.passport_id_validator(
+            passport_id=self.identification_number_edit.text(),
+            birth_date=birth_date,
+            sex=sex,
+            field_name="Идентификационный номер",
+            length=self.identification_number_edit.maxLength(),
+            mask=self.identification_number_regex
         )
         if error:
             self.call_error_box(error_text=error)

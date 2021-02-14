@@ -78,15 +78,17 @@ def checkbox_validator(state, field_name=None, is_tristate=False):
     return None
 
 
-def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=None):
+def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=None, mask=None):
     # man - 0
     # woman - 1
-    field_name = change_field_name(field_name)
+    # field_name = change_field_name(field_name)
     error = string_validator(
-        passport_id, field_name=field_name, min_length=length, max_length=length
+        passport_id, field_name=field_name, min_length=length, max_length=length, mask=mask
     )
     if error:
         return error
+
+    field_name = change_field_name(field_name)
 
     # validate first digit
     century = 1 + birth_date.year//100
@@ -96,35 +98,14 @@ def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=
     }
     digit = codes[sex][century]
 
-    if type(passport_id[0]) != int:
-        return f"Первый символ поля {field_name} должен быть цифрой."
-
+    # validate 1 digit
     if int(passport_id[0]) != digit:
         return f"Первая цифра поля {field_name} некорректна."
 
     # validate birth date digits (2-8)
-    str_birth_date = birth_date.strftime(fmt="%d%m%y")
+    str_birth_date = birth_date.strftime("%d%m%y")
     if str_birth_date != passport_id[1:7]:
         return f"Перепроверьте цифры номер 2-7 поля {field_name}."
-
-    # validate region letter
-    region_letter = passport_id[7]
-    if region_letter not in "ABCHKEM":
-        return f"Перепроверьте букву номер 8 поля {field_name}."
-
-    # validate order number
-    error = string_validator(
-        passport_id[8:11], field_name=field_name, mask=r"\d{3}"
-    )
-    if error:
-        return f"Перепроверьте цифры номер 9-11 поля {field_name}."
-
-    # validate citizenship code
-    error = string_validator(
-        passport_id[11:13], field_name=field_name, mask=r"(PB|BA|BI)"
-    )
-    if error:
-        return f"Перепроверьте буквы номер 12-13 поля {field_name}."
 
     # validate control digit
     number_list = []
@@ -132,16 +113,13 @@ def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=
         if c.isdigit():
             number_list.append(int(c))
         else:
-            number_list.append(string.ascii_lowercase.index(c) + 9)
+            number_list.append(string.ascii_uppercase.index(c) + 10)
 
-    func = "731"
+    func = [7, 3, 1]
     control_digit = 0
-    for i in range(len(number_list)):
+    for i in range(len(number_list)-1):
         control_digit += number_list[i] * func[i % len(func)]
     control_digit %= 10
-
-    if type(passport_id[-1]) != int:
-        return f"Первая цифра поля {field_name} некорректна."
 
     if control_digit != int(passport_id[-1]):
         return f"Контрольная цифра поля {field_name} некорректна."
