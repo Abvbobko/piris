@@ -108,17 +108,16 @@ def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=
         return f"Перепроверьте цифры номер 2-7 поля {field_name}."
 
     # validate control digit
-    number_list = []
-    for c in passport_id:
-        if c.isdigit():
-            number_list.append(int(c))
-        else:
-            number_list.append(string.ascii_uppercase.index(c) + 10)
 
     func = [7, 3, 1]
     control_digit = 0
-    for i in range(len(number_list)-1):
-        control_digit += number_list[i] * func[i % len(func)]
+    for i in range(len(passport_id) - 1):
+        if passport_id[i].isdigit():
+            number = int(passport_id[i])
+        else:
+            number = string.ascii_uppercase.index(passport_id[i]) + 10
+        control_digit += number * func[i % len(func)]
+
     control_digit %= 10
 
     if control_digit != int(passport_id[-1]):
