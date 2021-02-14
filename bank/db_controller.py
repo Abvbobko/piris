@@ -12,16 +12,12 @@ class DBController:
 
     @staticmethod
     def __get_connection(host, user, password, database):
-        try:
-            return mysql.connect(
-                host=host,
-                user=user,
-                passwd=password,
-                database=database
-            )
-        except Exception:
-            print("Can't connect to database")
-        return None
+        return mysql.connect(
+            host=host,
+            user=user,
+            passwd=password,
+            database=database
+        )
 
     def close_connection(self):
         self.db.close()
@@ -48,9 +44,6 @@ class DBController:
         return self._get_all_rows_from_table("disability")
 
 
-
-
 if __name__ == '__main__':
     db = DBController(creds.HOST, creds.USER, creds.PASSWORD, creds.DATABASE)
     print(db.get_disabilities())
-

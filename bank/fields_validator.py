@@ -1,11 +1,9 @@
 import re
-import bank.constants as const
-import datetime
 import string
 
 
-def is_match_pattern(pattern, string):
-    matched = re.match(pattern, string)
+def is_match_pattern(pattern, text):
+    matched = re.match(pattern, text)
     return bool(matched)
 
 
@@ -13,22 +11,22 @@ def change_field_name(field_name):
     return f' "{field_name}" ' if field_name else " "
 
 
-def string_validator(string, field_name=None, mask=None, min_length=None, max_length=None, can_be_empty=False):
+def string_validator(text, field_name=None, mask=None, min_length=None, max_length=None, can_be_empty=False):
     field_name = change_field_name(field_name)
 
-    if not string and not can_be_empty:
+    if not text and not can_be_empty:
         return f"Поле{field_name}не может быть пустым."
 
-    if can_be_empty and len(string) == 0:
+    if can_be_empty and len(text) == 0:
         return None
 
-    if mask and not is_match_pattern(mask, string):
+    if mask and not is_match_pattern(mask, text):
         return f"Поле{field_name}заполнено некорректно."
 
-    if min_length and len(string) < min_length:
+    if min_length and len(text) < min_length:
         return f"Поле{field_name}должно быть не меньше чем {min_length} символом."
 
-    if max_length and len(string) > max_length:
+    if max_length and len(text) > max_length:
         return f"Поле{field_name}должно не должно быть длиннее чем {max_length} символов."
 
     return None
@@ -124,4 +122,3 @@ def passport_id_validator(passport_id, birth_date, sex, field_name=None, length=
         return f"Контрольная цифра поля {field_name} некорректна."
 
     return None
-

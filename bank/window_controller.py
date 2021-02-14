@@ -5,9 +5,8 @@ import bank.fields_validator as validator
 import bank.data_converter as data_converter
 
 from PyQt5 import QtGui, uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QFrame, \
-    QRadioButton, QWidget, QHBoxLayout, QDateEdit, QMessageBox
-from PyQt5.QtCore import Qt, QRegExp, QDate
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PyQt5.QtCore import QRegExp, QDate
 
 import sys
 import os
@@ -15,7 +14,7 @@ import datetime
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, width, height, title=""):
+    def __init__(self, title=""):
         super(MainWindow, self).__init__()
         # ToDo: change path from static and move ui to project folder
         # get lists from db
@@ -38,24 +37,24 @@ class MainWindow(QMainWindow):
         self.mode_combobox.addItems(self.window_modes)
 
         # set all comboboxes
-        self.set_combobox(self.residence_city_combobox, cities, "Город факт. проживания")
-        self.set_combobox(self.registration_city_combobox, cities, "Город прописки")
-        self.set_combobox(self.citizenship_combobox, citizenships, "Гражданство")
-        self.set_combobox(self.disability_combobox, disabilities, "Инвалидность")
-        self.set_combobox(self.marital_status_combobox, marital_statuses, "Семейное положение")
+        MainWindow.set_combobox(self.residence_city_combobox, cities, "Город факт. проживания")
+        MainWindow.set_combobox(self.registration_city_combobox, cities, "Город прописки")
+        MainWindow.set_combobox(self.citizenship_combobox, citizenships, "Гражданство")
+        MainWindow.set_combobox(self.disability_combobox, disabilities, "Инвалидность")
+        MainWindow.set_combobox(self.marital_status_combobox, marital_statuses, "Семейное положение")
 
         # add surname, name and patronymic edit filters
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.surname_edit, field_name="Фамилия", mask_regex=const.NAME_REGEX,
             max_length=const.MAX_NAME_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.name_edit, field_name="Имя", mask_regex=const.NAME_REGEX,
             max_length=const.MAX_NAME_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.patronymic_edit, field_name="Отчество", mask_regex=const.NAME_REGEX,
             max_length=const.MAX_NAME_LENGTH, can_be_empty=False
         )
@@ -74,46 +73,46 @@ class MainWindow(QMainWindow):
         self.issue_date_edit.field_name = "Дата выдачи"
 
         # add constraints for the string edits
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.passport_series_edit, field_name="Серия паспорта", mask_regex=const.PASSPORT_SERIES_MASK,
             max_length=const.MAX_PASSPORT_SERIES_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.issued_by_edit, field_name="Кем выдан", mask_regex=None,
             max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.birth_place_edit, field_name="Место рождения", mask_regex=None,
             max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.residence_address_edit, field_name="Адрес факт. проживания", mask_regex=None,
             max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
         )
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.email_edit, field_name="Email", mask_regex=None,
             max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=True
         )
 
         # phone number validators
         placeholder = const.HOME_PHONE_PLACEHOLDER
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.home_phone_edit, field_name="Телефон домашний", mask_regex=const.HOME_PHONE_MASK,
             max_length=len(placeholder), can_be_empty=True, placeholder=placeholder
         )
 
         placeholder = const.MOBILE_PHONE_PLACEHOLDER
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.mobile_phone_edit, field_name="Телефон мобильный", mask_regex=const.MOBILE_PHONE_MASK,
             max_length=const.MOBILE_PHONE_LENGTH, can_be_empty=True, placeholder=placeholder
         )
 
         # set passport number and id validators
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.passport_number_edit, field_name="Номер паспорта", mask_regex=const.PASSPORT_NUMBER_MASK,
             max_length=const.PASSPORT_NUMBER_LENGTH, can_be_empty=False
         )
@@ -123,7 +122,7 @@ class MainWindow(QMainWindow):
         self.identification_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.identification_number_regex)))
         self.identification_number_edit.field_name = "Идентификационный номер"
 
-        self.set_string_edit(
+        MainWindow.set_string_edit(
             self.monthly_income_edit, field_name="Ежемесячный доход", mask_regex=const.INCOME_MASK,
             max_length=const.INCOME_MAX_LENGTH, can_be_empty=True
         )
@@ -136,7 +135,8 @@ class MainWindow(QMainWindow):
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
 
-    def set_string_edit(self, edit, field_name=None,
+    @staticmethod
+    def set_string_edit(edit, field_name=None,
                         can_be_empty=False, max_length=255, mask_regex=None, placeholder=None):
         edit.mask_regex = mask_regex
         edit.setMaxLength(max_length)
@@ -147,7 +147,8 @@ class MainWindow(QMainWindow):
         if placeholder:
             edit.setPlaceholderText(placeholder)
 
-    def set_combobox(self, combobox, db_values, field_name):
+    @staticmethod
+    def set_combobox(combobox, db_values, field_name):
         db_values_names = MainWindow.get_names_from_values(db_values)
         combobox.db_values = db_values
         combobox.clear()
@@ -170,7 +171,8 @@ class MainWindow(QMainWindow):
             self.add_button.clicked.connect(self.delete_button_click)
         print(f'change on {value}')
 
-    def call_error_box(self, error_title="Ошибка", error_text=""):
+    @staticmethod
+    def call_error_box(error_title="Ошибка", error_text=""):
         print("ERROR")
         message_box = QMessageBox()
         message_box.setIcon(QMessageBox.Critical)
@@ -178,7 +180,8 @@ class MainWindow(QMainWindow):
         message_box.setWindowTitle(error_title)
         message_box.exec_()
 
-    def validate_string_edit(self, edit):
+    @staticmethod
+    def validate_string_edit(edit):
         error = validator.string_validator(
             string=edit.text(),
             field_name=edit.field_name,
@@ -188,7 +191,8 @@ class MainWindow(QMainWindow):
         )
         return error
 
-    def validate_combobox(self, combobox):
+    @staticmethod
+    def validate_combobox(combobox):
         error = validator.combobox_validator(
             combobox.currentText(),
             field_name=combobox.field_name
@@ -213,7 +217,7 @@ class MainWindow(QMainWindow):
             self.monthly_income_edit
         ]
         for edit in string_data_edits:
-            error = self.validate_string_edit(edit)
+            error = MainWindow.validate_string_edit(edit)
             if error:
                 return error
 
@@ -226,7 +230,7 @@ class MainWindow(QMainWindow):
         ]
 
         for combobox in comboboxes:
-            error = self.validate_combobox(combobox)
+            error = MainWindow.validate_combobox(combobox)
             if error:
                 return error
 
@@ -302,7 +306,7 @@ class MainWindow(QMainWindow):
         print('add')
         error = self.validate_fields()
         if error:
-            self.call_error_box(error_text=error)
+            MainWindow.call_error_box(error_text=error)
         else:
             print("OK")
 
@@ -332,11 +336,7 @@ if __name__ == '__main__':
     sys.excepthook = except_hook
 
     app = QApplication([])
-    window = MainWindow(
-        width=const.WIN_WIDTH,
-        height=const.WIN_HEIGHT,
-        title=const.WIN_TITLE,
-    )
+    window = MainWindow(title=const.WIN_TITLE)
     window.show()
     # Start the event loop.
     app.exec_()
