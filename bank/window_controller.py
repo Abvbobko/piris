@@ -66,18 +66,20 @@ class MainWindow(QMainWindow):
         self.marital_status_combobox.field_name = "Семейное положение"
 
         # add surname, name and patronymic edit filters
-        self.surname_regex = const.NAME_REGEX
-        self.surname_edit.field_name = "Фамилия"
-        self.surname_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.surname_regex)))
-        self.surname_edit.setMaxLength(const.MAX_NAME_LENGTH)
-        self.name_regex = const.NAME_REGEX
-        self.name_edit.field_name = "Имя"
-        self.name_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.name_regex)))
-        self.name_edit.setMaxLength(const.MAX_NAME_LENGTH)
-        self.patronymic_regex = const.NAME_REGEX
-        self.patronymic_edit.field_name = "Отчество"
-        self.patronymic_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.patronymic_regex)))
-        self.patronymic_edit.setMaxLength(const.MAX_NAME_LENGTH)
+        self.set_string_edit(
+            self.surname_edit, field_name="Фамилия", mask_regex=const.NAME_REGEX,
+            max_length=const.MAX_NAME_LENGTH, can_be_empty=False
+        )
+
+        self.set_string_edit(
+            self.name_edit, field_name="Имя", mask_regex=const.NAME_REGEX,
+            max_length=const.MAX_NAME_LENGTH, can_be_empty=False
+        )
+
+        self.set_string_edit(
+            self.patronymic_edit, field_name="Отчество", mask_regex=const.NAME_REGEX,
+            max_length=const.MAX_NAME_LENGTH, can_be_empty=False
+        )
 
         # add dates constraints
         today = datetime.date.today()
@@ -93,62 +95,78 @@ class MainWindow(QMainWindow):
         self.issue_date_edit.field_name = "Дата выдачи"
 
         # add constraints for the string edits
-        self.passport_series_regex = const.PASSPORT_SERIES_MASK
-        self.passport_series_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.passport_series_regex)))
-        self.passport_series_edit.setMaxLength(const.MAX_PASSPORT_SERIES_LENGTH)
-        self.passport_series_edit.field_name = "Серия паспорта"
+        self.set_string_edit(
+            self.passport_series_edit, field_name="Серия паспорта", mask_regex=const.PASSPORT_SERIES_MASK,
+            max_length=const.MAX_PASSPORT_SERIES_LENGTH, can_be_empty=False
+        )
 
-        self.issued_by_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
-        self.issued_by_edit.field_name = "Кем выдан"
+        self.set_string_edit(
+            self.issued_by_edit, field_name="Кем выдан", mask_regex=None,
+            max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
+        )
 
-        self.birth_place_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
-        self.birth_place_edit.field_name = "Место рождения"
+        self.set_string_edit(
+            self.birth_place_edit, field_name="Место рождения", mask_regex=None,
+            max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
+        )
 
-        self.residence_address_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
-        self.residence_address_edit.field_name = "Адрес факт. проживания"
+        self.set_string_edit(
+            self.residence_address_edit, field_name="Адрес факт. проживания", mask_regex=None,
+            max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=False
+        )
 
-        self.email_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
-        self.email_edit.field_name = "Email"
+        self.set_string_edit(
+            self.email_edit, field_name="Email", mask_regex=None,
+            max_length=const.MAX_INFO_STRING_LENGTH, can_be_empty=True
+        )
 
         # phone number validators
         placeholder = const.HOME_PHONE_PLACEHOLDER
-        self.home_phone_regex = const.HOME_PHONE_MASK
-        self.home_phone_edit.setPlaceholderText(placeholder)
-        self.home_phone_edit.setMaxLength(len(placeholder))
-        self.home_phone_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.home_phone_regex)))
-        self.home_phone_edit.field_name = "Телефон домашний"
+        self.set_string_edit(
+            self.home_phone_edit, field_name="Телефон домашний", mask_regex=const.HOME_PHONE_MASK,
+            max_length=len(placeholder), can_be_empty=True, placeholder=placeholder
+        )
 
         placeholder = const.MOBILE_PHONE_PLACEHOLDER
-        self.mobile_phone_regex = const.MOBILE_PHONE_MASK
-        self.mobile_phone_edit.setPlaceholderText(placeholder)
-        self.mobile_phone_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.mobile_phone_regex)))
-        self.mobile_phone_edit.setMaxLength(const.MOBILE_PHONE_LENGTH)
-        self.mobile_phone_edit.field_name = "Телефон мобильный"
+        self.set_string_edit(
+            self.mobile_phone_edit, field_name="Телефон мобильный", mask_regex=const.MOBILE_PHONE_MASK,
+            max_length=const.MOBILE_PHONE_LENGTH, can_be_empty=True, placeholder=placeholder
+        )
 
         # set passport number and id validators
-        self.passport_number_regex = const.PASSPORT_NUMBER_MASK
-        self.passport_number_edit.setMaxLength(const.PASSPORT_NUMBER_LENGTH)
-        self.passport_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.passport_number_regex)))
-        self.passport_number_edit.field_name = "Номер паспорта"
+        self.set_string_edit(
+            self.passport_number_edit, field_name="Номер паспорта", mask_regex=const.PASSPORT_NUMBER_MASK,
+            max_length=const.PASSPORT_NUMBER_LENGTH, can_be_empty=False
+        )
 
         self.identification_number_regex = const.PASSPORT_ID_MASK
         self.identification_number_edit.setMaxLength(const.PASSPORT_ID_LENGTH)
         self.identification_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.identification_number_regex)))
         self.identification_number_edit.field_name = "Идентификационный номер"
 
-        self.monthly_income_regex = const.INCOME_MASK
-        self.monthly_income_edit.setMaxLength(const.INCOME_MAX_LENGTH)
-        self.monthly_income_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.monthly_income_regex)))
-        self.monthly_income_edit.field_name = "Ежемесячный доход"
+        self.set_string_edit(
+            self.monthly_income_edit, field_name="Ежемесячный доход", mask_regex=const.INCOME_MASK,
+            max_length=const.INCOME_MAX_LENGTH, can_be_empty=True
+        )
 
         self.pension_checkbox.field_name = "Пенсионер"
         self.m_radio_button.field_name = "Пол"
         self.w_radio_button.field_name = "Пол"
 
-
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
+
+    def set_string_edit(self, edit, field_name=None,
+                        can_be_empty=False, max_length=255, mask_regex=None, placeholder=None):
+        edit.mask_regex = mask_regex
+        edit.setMaxLength(max_length)
+        if mask_regex:
+            edit.setValidator(QtGui.QRegExpValidator(QRegExp(edit.mask_regex)))
+        edit.field_name = field_name
+        edit.can_be_empty = can_be_empty
+        if placeholder:
+            edit.setPlaceholderText(placeholder)
 
     def change_mode(self, value):
         self.window_current_mode = value
@@ -174,42 +192,47 @@ class MainWindow(QMainWindow):
         message_box.setWindowTitle(error_title)
         message_box.exec_()
 
-    def validate_fields(self):
-        # validate surname
+    def validate_string(self, edit):
         error = validator.string_validator(
-            string=self.surname_edit.text(),
-            field_name=self.surname_edit.field_name,
-            mask=self.surname_regex,
-            max_length=self.surname_edit.maxLength()
+            string=edit.text(),
+            field_name=edit.field_name,
+            mask=edit.mask_regex,
+            max_length=edit.maxLength(),
+            can_be_empty=edit.can_be_empty
         )
-        if error:
-            return error
+        return error
+
+    def validate_fields(self):
+
+        # validate string data edits
+        string_data_edits = [
+            self.surname_edit,
+            self.name_edit,
+            self.patronymic_edit,
+            self.passport_series_edit,
+            self.issued_by_edit,
+            self.birth_place_edit,
+            self.residence_address_edit,
+            self.email_edit,
+            self.home_phone_edit,
+            self.mobile_phone_edit,
+            self.passport_number_edit,
+            self.monthly_income_edit
+        ]
+        for edit in string_data_edits:
+            error = self.validate_string(edit)
+            if error:
+                return error
+
+        # fix surname
         surname = data_converter.convert_name(self.surname_edit.text())
         self.surname_edit.setText(surname)
 
-        # validate name
-        error = validator.string_validator(
-            string=self.name_edit.text(),
-            field_name=self.name_edit.field_name,
-            mask=self.name_regex,
-            max_length=self.name_edit.maxLength()
-        )
-        if error:
-            return error
-
+        # fix name
         name = data_converter.convert_name(self.name_edit.text())
         self.name_edit.setText(name)
 
-        # validate patronymic
-        error = validator.string_validator(
-            string=self.patronymic_edit.text(),
-            field_name=self.patronymic_edit.field_name,
-            mask=self.patronymic_regex,
-            max_length=self.patronymic_edit.maxLength()
-        )
-        if error:
-            return error
-
+        # fix patronymic
         patronymic = data_converter.convert_name(self.patronymic_edit.text())
         self.patronymic_edit.setText(patronymic)
 
@@ -289,87 +312,9 @@ class MainWindow(QMainWindow):
         if error:
             return error
 
-        # validate passport_series
-        error = validator.string_validator(
-            string=self.passport_series_edit.text(),
-            field_name=self.passport_series_edit.field_name,
-            mask=self.passport_series_regex,
-            max_length=self.passport_series_edit.maxLength()
-        )
-        if error:
-            return error
-
+        # fix passport series
         passport_series = data_converter.to_upper(self.passport_series_edit.text())
         self.passport_series_edit.setText(passport_series)
-
-        # validate issued_by
-        error = validator.string_validator(
-            string=self.issued_by_edit.text(),
-            field_name=self.issued_by_edit.field_name,
-            max_length=self.issued_by_edit.maxLength()
-        )
-        if error:
-            return error
-
-        # validate birth_place
-        error = validator.string_validator(
-            string=self.birth_place_edit.text(),
-            field_name=self.birth_place_edit.field_name,
-            max_length=self.birth_place_edit.maxLength()
-        )
-        if error:
-            return error
-
-        # validate residence_address
-        error = validator.string_validator(
-            string=self.residence_address_edit.text(),
-            field_name=self.residence_address_edit.field_name,
-            max_length=self.residence_address_edit.maxLength()
-        )
-        if error:
-            return error
-
-        # validate email
-        error = validator.string_validator(
-            string=self.email_edit.text(),
-            field_name=self.email_edit.field_name,
-            max_length=self.email_edit.maxLength(),
-            can_be_empty=True
-        )
-        if error:
-            return error
-
-        # validate home_phone
-        error = validator.string_validator(
-            string=self.home_phone_edit.text(),
-            field_name=self.home_phone_edit.field_name,
-            max_length=self.home_phone_edit.maxLength(),
-            can_be_empty=True,
-            mask=self.home_phone_regex
-        )
-        if error:
-            return error
-
-        # validate mobile_phone
-        error = validator.string_validator(
-            string=self.mobile_phone_edit.text(),
-            field_name=self.mobile_phone_edit.field_name,
-            max_length=self.mobile_phone_edit.maxLength(),
-            can_be_empty=True,
-            mask=self.mobile_phone_regex
-        )
-        if error:
-            return error
-
-        # validate passport_number
-        error = validator.string_validator(
-            string=self.passport_number_edit.text(),
-            field_name=self.passport_number_edit.field_name,
-            max_length=self.passport_number_edit.maxLength(),
-            mask=self.passport_number_regex
-        )
-        if error:
-            return error
 
         # validate passport_id
         birth_date = self.birth_date_edit.date().toPyDate()
@@ -381,17 +326,6 @@ class MainWindow(QMainWindow):
             field_name=self.identification_number_edit.field_name,
             length=self.identification_number_edit.maxLength(),
             mask=self.identification_number_regex
-        )
-        if error:
-            return error
-
-        # validate income monthly
-        error = validator.string_validator(
-            string=self.monthly_income_edit.text(),
-            field_name=self.monthly_income_edit.field_name,
-            max_length=self.monthly_income_edit.maxLength(),
-            can_be_empty=True,
-            mask=self.monthly_income_regex
         )
         if error:
             return error
