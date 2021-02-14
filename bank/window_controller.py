@@ -99,8 +99,14 @@ class MainWindow(QMainWindow):
         self.passport_series_edit.field_name = "Серия паспорта"
 
         self.issued_by_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.issued_by_edit.field_name = "Кем выдан"
+
         self.birth_place_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.birth_place_edit.field_name = "Место рождения"
+
         self.residence_address_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
+        self.residence_address_edit.field_name = "Адрес факт. проживания"
+
         self.email_edit.setMaxLength(const.MAX_INFO_STRING_LENGTH)
         self.email_edit.field_name = "Email"
 
@@ -177,8 +183,7 @@ class MainWindow(QMainWindow):
             max_length=self.surname_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
         surname = data_converter.convert_name(self.surname_edit.text())
         self.surname_edit.setText(surname)
 
@@ -190,8 +195,7 @@ class MainWindow(QMainWindow):
             max_length=self.name_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         name = data_converter.convert_name(self.name_edit.text())
         self.name_edit.setText(name)
@@ -204,8 +208,7 @@ class MainWindow(QMainWindow):
             max_length=self.patronymic_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         patronymic = data_converter.convert_name(self.patronymic_edit.text())
         self.patronymic_edit.setText(patronymic)
@@ -218,8 +221,7 @@ class MainWindow(QMainWindow):
             date=date, field_name=self.birth_date_edit.field_name, min_date=min_date, max_date=max_date
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate issue_date
         date = self.issue_date_edit.date().toPyDate()
@@ -229,8 +231,7 @@ class MainWindow(QMainWindow):
             date=date, field_name=self.issue_date_edit.field_name, min_date=min_date, max_date=max_date
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate sex
         error = validator.radio_button_validator(
@@ -238,8 +239,7 @@ class MainWindow(QMainWindow):
             field_name=self.m_radio_button.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate residence city
         error = validator.combobox_validator(
@@ -247,8 +247,7 @@ class MainWindow(QMainWindow):
             field_name=self.residence_city_combobox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate registration city
         error = validator.combobox_validator(
@@ -256,8 +255,7 @@ class MainWindow(QMainWindow):
             field_name=self.registration_city_combobox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate citizenship
         error = validator.combobox_validator(
@@ -265,8 +263,7 @@ class MainWindow(QMainWindow):
             field_name=self.citizenship_combobox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate marital status
         error = validator.combobox_validator(
@@ -274,8 +271,7 @@ class MainWindow(QMainWindow):
             field_name=self.marital_status_combobox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate disability
         error = validator.combobox_validator(
@@ -283,8 +279,7 @@ class MainWindow(QMainWindow):
             field_name=self.disability_combobox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate pension
         error = validator.checkbox_validator(
@@ -292,8 +287,7 @@ class MainWindow(QMainWindow):
             field_name=self.pension_checkbox.field_name
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate passport_series
         error = validator.string_validator(
@@ -303,8 +297,7 @@ class MainWindow(QMainWindow):
             max_length=self.passport_series_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         passport_series = data_converter.to_upper(self.passport_series_edit.text())
         self.passport_series_edit.setText(passport_series)
@@ -312,32 +305,29 @@ class MainWindow(QMainWindow):
         # validate issued_by
         error = validator.string_validator(
             string=self.issued_by_edit.text(),
-            field_name="Кем выдан",
+            field_name=self.issued_by_edit.field_name,
             max_length=self.issued_by_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate birth_place
         error = validator.string_validator(
             string=self.birth_place_edit.text(),
-            field_name="Место рождения",
+            field_name=self.birth_place_edit.field_name,
             max_length=self.birth_place_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate residence_address
         error = validator.string_validator(
             string=self.residence_address_edit.text(),
-            field_name="Адрес факт. проживания",
+            field_name=self.residence_address_edit.field_name,
             max_length=self.residence_address_edit.maxLength()
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate email
         error = validator.string_validator(
@@ -347,8 +337,7 @@ class MainWindow(QMainWindow):
             can_be_empty=True
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate home_phone
         error = validator.string_validator(
@@ -359,8 +348,7 @@ class MainWindow(QMainWindow):
             mask=self.home_phone_regex
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate mobile_phone
         error = validator.string_validator(
@@ -371,8 +359,7 @@ class MainWindow(QMainWindow):
             mask=self.mobile_phone_regex
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate passport_number
         error = validator.string_validator(
@@ -382,8 +369,7 @@ class MainWindow(QMainWindow):
             mask=self.passport_number_regex
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate passport_id
         birth_date = self.birth_date_edit.date().toPyDate()
@@ -397,8 +383,7 @@ class MainWindow(QMainWindow):
             mask=self.identification_number_regex
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
         # validate income monthly
         error = validator.string_validator(
@@ -409,14 +394,16 @@ class MainWindow(QMainWindow):
             mask=self.monthly_income_regex
         )
         if error:
-            self.call_error_box(error_text=error)
-            return False
+            return error
 
-        return True
+        return None
 
     def add_button_click(self):
         print('add')
-        if self.validate_fields():
+        error = self.validate_fields()
+        if error:
+            self.call_error_box(error_text=error)
+        else:
             print("OK")
 
     def update_button_click(self):
