@@ -112,6 +112,10 @@ class MainWindow(QMainWindow):
         self.identification_number_edit.setMaxLength(const.PASSPORT_ID_LENGTH)
         self.identification_number_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.identification_number_regex)))
 
+        self.monthly_income_regex = const.INCOME_MASK
+        self.monthly_income_edit.setMaxLength(const.INCOME_MAX_LENGTH)
+        self.monthly_income_edit.setValidator(QtGui.QRegExpValidator(QRegExp(self.monthly_income_regex)))
+
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
@@ -364,6 +368,18 @@ class MainWindow(QMainWindow):
             field_name="Идентификационный номер",
             length=self.identification_number_edit.maxLength(),
             mask=self.identification_number_regex
+        )
+        if error:
+            self.call_error_box(error_text=error)
+            return False
+
+        # validate income monthly
+        error = validator.string_validator(
+            string=self.monthly_income_edit.text(),
+            field_name="Ежемесячный доход",
+            max_length=self.monthly_income_edit.maxLength(),
+            can_be_empty=True,
+            mask=self.monthly_income_regex
         )
         if error:
             self.call_error_box(error_text=error)
