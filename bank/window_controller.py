@@ -37,33 +37,12 @@ class MainWindow(QMainWindow):
         self.mode_combobox.clear()
         self.mode_combobox.addItems(self.window_modes)
 
-        city_names = MainWindow.get_names_from_values(cities)
-        self.cities = cities
-        self.residence_city_combobox.clear()
-        self.residence_city_combobox.addItems(city_names)
-        self.residence_city_combobox.field_name = "Город факт. проживания"
-
-        self.registration_city_combobox.clear()
-        self.registration_city_combobox.addItems(city_names)
-        self.registration_city_combobox.field_name = "Город прописки"
-
-        citizenships_names = MainWindow.get_names_from_values(citizenships)
-        self.citizenships = citizenships
-        self.citizenship_combobox.clear()
-        self.citizenship_combobox.addItems(citizenships_names)
-        self.citizenship_combobox.field_name = "Гражданство"
-
-        disabilities_names = MainWindow.get_names_from_values(disabilities)
-        self.disabilities = disabilities
-        self.disability_combobox.clear()
-        self.disability_combobox.addItems(disabilities_names)
-        self.disability_combobox.field_name = "Инвалидность"
-
-        marital_statuses_names = MainWindow.get_names_from_values(marital_statuses)
-        self.marital_statuses = marital_statuses
-        self.marital_status_combobox.clear()
-        self.marital_status_combobox.addItems(marital_statuses_names)
-        self.marital_status_combobox.field_name = "Семейное положение"
+        # set all comboboxes
+        self.set_combobox(self.residence_city_combobox, cities, "Город факт. проживания")
+        self.set_combobox(self.registration_city_combobox, cities, "Город прописки")
+        self.set_combobox(self.citizenship_combobox, citizenships, "Гражданство")
+        self.set_combobox(self.disability_combobox, disabilities, "Инвалидность")
+        self.set_combobox(self.marital_status_combobox, marital_statuses, "Семейное положение")
 
         # add surname, name and patronymic edit filters
         self.set_string_edit(
@@ -168,6 +147,13 @@ class MainWindow(QMainWindow):
         if placeholder:
             edit.setPlaceholderText(placeholder)
 
+    def set_combobox(self, combobox, db_values, field_name):
+        db_values_names = MainWindow.get_names_from_values(db_values)
+        combobox.db_values = db_values
+        combobox.clear()
+        combobox.addItems(db_values_names)
+        combobox.field_name = field_name
+
     def change_mode(self, value):
         self.window_current_mode = value
         if value == self.window_modes[0]:
@@ -192,13 +178,20 @@ class MainWindow(QMainWindow):
         message_box.setWindowTitle(error_title)
         message_box.exec_()
 
-    def validate_string(self, edit):
+    def validate_string_edit(self, edit):
         error = validator.string_validator(
             string=edit.text(),
             field_name=edit.field_name,
             mask=edit.mask_regex,
             max_length=edit.maxLength(),
             can_be_empty=edit.can_be_empty
+        )
+        return error
+
+    def validate_combobox(self, combobox):
+        error = validator.combobox_validator(
+            combobox.currentText(),
+            field_name=combobox.field_name
         )
         return error
 
@@ -220,7 +213,20 @@ class MainWindow(QMainWindow):
             self.monthly_income_edit
         ]
         for edit in string_data_edits:
-            error = self.validate_string(edit)
+            error = self.validate_string_edit(edit)
+            if error:
+                return error
+
+        comboboxes = [
+            self.residence_city_combobox,
+            self.registration_city_combobox,
+            self.citizenship_combobox,
+            self.marital_status_combobox,
+            self.disability_combobox
+        ]
+
+        for combobox in comboboxes:
+            error = self.validate_combobox(combobox)
             if error:
                 return error
 
@@ -260,46 +266,6 @@ class MainWindow(QMainWindow):
         error = validator.radio_button_validator(
             checked_list=[self.m_radio_button.isChecked(), self.w_radio_button.isChecked()],
             field_name=self.m_radio_button.field_name
-        )
-        if error:
-            return error
-
-        # validate residence city
-        error = validator.combobox_validator(
-            self.residence_city_combobox.currentText(),
-            field_name=self.residence_city_combobox.field_name
-        )
-        if error:
-            return error
-
-        # validate registration city
-        error = validator.combobox_validator(
-            self.registration_city_combobox.currentText(),
-            field_name=self.registration_city_combobox.field_name
-        )
-        if error:
-            return error
-
-        # validate citizenship
-        error = validator.combobox_validator(
-            self.citizenship_combobox.currentText(),
-            field_name=self.citizenship_combobox.field_name
-        )
-        if error:
-            return error
-
-        # validate marital status
-        error = validator.combobox_validator(
-            self.marital_status_combobox.currentText(),
-            field_name=self.marital_status_combobox.field_name
-        )
-        if error:
-            return error
-
-        # validate disability
-        error = validator.combobox_validator(
-            self.disability_combobox.currentText(),
-            field_name=self.disability_combobox.field_name
         )
         if error:
             return error
