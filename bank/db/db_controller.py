@@ -22,16 +22,8 @@ class DBController:
 
     def is_passport_number_exists(self, passport_series, passport_number):
         params = [
-            {
-                "field_name": "passport_series",
-                "field_value": passport_series,
-                "quote_char": True
-            },
-            {
-                "field_name": "passport_number",
-                "field_value": passport_number,
-                "quote_char": False
-            }
+            DBController._create_param_dict("passport_series", passport_series, True),
+            DBController._create_param_dict("passport_number", passport_number, False)
         ]
         found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
         if found_records:
@@ -39,11 +31,9 @@ class DBController:
         return False
 
     def is_passport_id_exists(self, passport_id):
-        params = [{
-            "field_name": "identification_number",
-            "field_value": passport_id,
-            "quote_char": True
-        }]
+        params = [
+            DBController._create_param_dict("identification_number", passport_id, True)
+        ]
         found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
         if found_records:
             return True
@@ -53,38 +43,68 @@ class DBController:
     def _quote_value(value, needs_quote_char):
         return f'"{value}"' if needs_quote_char else f'{value}'
 
-    def insert_person(self):
-        person_data = {
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": "",
-            "": ""
+    @staticmethod
+    def _create_param_dict(field_name, value, need_quote_char):
+        return {
+            "field_name": field_name,
+            "field_value": value,
+            "quote_char": need_quote_char
         }
 
-        self._write_to_db(db_names.PERSON_TABLE, None)
+    def insert_person(self, first_name, surname, patronymic, birth_date, sex, passport_series, passport_number,
+                      issued_by, issue_date, identification_number, birth_place, residence_address, home_phone,
+                      mobile_phone, email, pension, monthly_income, marital_status, disability, citizenship,
+                      residence_city, registration_city):
+        # todo: sex mapping
+        # todo: birth_date formatting to yyyy-mm-dd?
+        # todo: passport_number to int
+        # todo: issue_date to yyyy-mm-dd
+        # todo: home_phone if '' -> None
+        # todo: mobile_phone if '' -> None
+        # todo: email if '' -> None
+        # todo: pension mapping
+        # todo: monthly income if '' -> None
+        # todo: monthly income to float/double
+        # todo: marital_status mapping
+        # todo: disability mapping
+        # todo: citizenship mapping
+        # todo: residence_city mapping
+        # todo: registration_city mapping
+        person_data = [
+            DBController._create_param_dict("first_name", first_name, True),
+            DBController._create_param_dict("surname", surname, True),
+            DBController._create_param_dict("patronymic", patronymic, True),
+            DBController._create_param_dict("birth_date", birth_date, ),
+            DBController._create_param_dict("sex", sex, ),
+            DBController._create_param_dict("passport_series", passport_series, True),
+            DBController._create_param_dict("passport_number", passport_number, False),
 
-    def _write_to_db(self, table_name, dict_of_params):
+        ]
+
+        self._write_to_db(db_names.PERSON_TABLE, person_data)
+
+    def _write_to_db(self, table_name, list_of_params):
         """Insert new record into db table
         :param table_name: name of the db table
-        :param dict_of_params: list with the following pattern:
+        :param list_of_params: list with the following pattern:
+                [
                     {
                         field_name: field_name_value, (string)
                         field_value: field_value_value, (any type)
                         quote_char: quote_char_value (bool)
-                    }
+                    },
+                    ...
+                ]
         :return:
         """
         # INSERT INTO `table_name`(column_1,column_2,...) VALUES (value_1,value_2,...);
         sql_column_names = []
         sql_insert_values = []
-
-        if dict_of_params["field_value"]:
-            value = DBController._quote_value(dict_of_params["field_value"], dict_of_params["quote_char"])
-            sql_column_names.append(dict_of_params['field_name'])
-            sql_insert_values.append(value)
+        for param in list_of_params:
+            if param["field_value"]:
+                value = DBController._quote_value(param["field_value"], param["quote_char"])
+                sql_column_names.append(param['field_name'])
+                sql_insert_values.append(value)
 
         sql_names = ",".join(sql_column_names)
         sql_values = ",".join(sql_insert_values)
@@ -144,6 +164,15 @@ class DBController:
         self.cursor.execute("SHOW TABLES")
         tables = [table for (table, ) in self.cursor.fetchall()]
         return tables
+
+    def _get_id_by_name(self, name, table_name):
+        map_list = self._get_all_rows_from_table(table_name)
+        value_id = None
+        for record in map_list:
+            if record[1] == name:
+                value_id = record[0]
+                break
+        return value_id
 
     @staticmethod
     def get_names_from_values(values):
