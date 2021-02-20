@@ -1,8 +1,8 @@
-import bank.constants as const
+import bank.constants.constants as const
 import bank.db_controller as db_controller
-import bank.creds as creds
-import bank.fields_validator as validator
-import bank.data_converter as data_converter
+import bank.constants.creds as creds
+import bank.data_processing.fields_validator as validator
+import bank.data_processing.data_converter as data_converter
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox

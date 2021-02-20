@@ -1,5 +1,5 @@
 import mysql.connector as mysql
-import bank.creds as creds
+import bank.constants.creds as creds
 
 
 class DBController:
