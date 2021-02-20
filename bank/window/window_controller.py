@@ -7,6 +7,7 @@ import bank.window.data_processing.fields_validator as validator
 import bank.window.data_processing.fields_prevalidator as prevalidator
 import bank.window.data_processing.data_converter as data_converter
 import bank.window.fields_setter as fields_setter
+import bank.window.data_processing.db_data_converter as db_data_converter
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
@@ -246,6 +247,45 @@ class MainWindow(QMainWindow):
             return "Паспорт с таким идентификационным номером уже существует."
         return None
 
+    def add_person(self):
+        sex = db_data_converter.convert_sex_to_db_form(
+            self.m_radio_button.isChecked(),
+            self.w_radio_button.isChecked()
+        )
+        birth_date = db_data_converter.convert_date_to_the_db_form(self.birth_date_edit.date().toPyDate())
+        issue_date = db_data_converter.convert_date_to_the_db_form(self.issue_date_edit.date().toPyDate())
+        passport_number = int(self.passport_number_edit.text())
+        home_phone = db_data_converter.get_optional_value(self.home_phone_edit)
+        mobile_phone = db_data_converter.get_optional_value(self.mobile_phone_edit)
+        email = db_data_converter.get_optional_value(self.email_edit)
+        monthly_income = db_data_converter.get_optional_value(self.monthly_income_edit)
+        monthly_income = float(monthly_income) if monthly_income else None
+        pension = int(self.pension_checkbox.isChecked())
+        self.db.insert_person(
+            first_name=self.name_edit.text(),
+            surname=self.surname_edit.text(),
+            patronymic=self.patronymic_edit.text(),
+            birth_date=birth_date,
+            sex=sex,
+            passport_series=self.passport_series_edit.text(),
+            passport_number=passport_number,
+            issued_by=self.issued_by_edit.text(),
+            issue_date=issue_date,
+            identification_number=self.identification_number_edit.text(),
+            birth_place=self.birth_place_edit.text(),
+            residence_address=self.residence_address_edit.text(),
+            home_phone=home_phone,
+            mobile_phone=mobile_phone,
+            email=email,
+            pension=pension,
+            monthly_income=monthly_income,
+            marital_status=self.marital_status_combobox.currentText(),
+            disability=self.disability_combobox.currentText(),
+            citizenship=self.citizenship_combobox.currentText(),
+            residence_city=self.residence_city_combobox.currentText(),
+            registration_city=self.registration_city_combobox.currentText()
+        )
+
     def add_button_click(self):
         print('add')
         error = self.validate_fields()
@@ -257,6 +297,7 @@ class MainWindow(QMainWindow):
         if error:
             MainWindow.call_error_box(error_text=error)
             return
+
         print("OK")
 
     def update_button_click(self):

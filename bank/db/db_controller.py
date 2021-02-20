@@ -41,6 +41,8 @@ class DBController:
 
     @staticmethod
     def _quote_value(value, needs_quote_char):
+        if value is None:
+            return value
         return f'"{value}"' if needs_quote_char else f'{value}'
 
     @staticmethod
@@ -55,30 +57,40 @@ class DBController:
                       issued_by, issue_date, identification_number, birth_place, residence_address, home_phone,
                       mobile_phone, email, pension, monthly_income, marital_status, disability, citizenship,
                       residence_city, registration_city):
-        # todo: sex mapping
-        # todo: birth_date formatting to yyyy-mm-dd?
-        # todo: passport_number to int
-        # todo: issue_date to yyyy-mm-dd
-        # todo: home_phone if '' -> None
-        # todo: mobile_phone if '' -> None
-        # todo: email if '' -> None
-        # todo: pension mapping
-        # todo: monthly income if '' -> None
-        # todo: monthly income to float/double
-        # todo: marital_status mapping
-        # todo: disability mapping
-        # todo: citizenship mapping
-        # todo: residence_city mapping
-        # todo: registration_city mapping
+
         person_data = [
             DBController._create_param_dict("first_name", first_name, True),
             DBController._create_param_dict("surname", surname, True),
             DBController._create_param_dict("patronymic", patronymic, True),
-            DBController._create_param_dict("birth_date", birth_date, ),
-            DBController._create_param_dict("sex", sex, ),
+            DBController._create_param_dict("birth_date", birth_date, True),
+            DBController._create_param_dict("sex", sex, False),
             DBController._create_param_dict("passport_series", passport_series, True),
             DBController._create_param_dict("passport_number", passport_number, False),
-
+            DBController._create_param_dict("issued_by", issued_by, True),
+            DBController._create_param_dict("issue_date", issue_date, True),
+            DBController._create_param_dict("identification_number", identification_number, True),
+            DBController._create_param_dict("birth_place", birth_place, True),
+            DBController._create_param_dict("residence_address", residence_address, True),
+            DBController._create_param_dict("home_phone", home_phone, True),
+            DBController._create_param_dict("mobile_phone", mobile_phone, True),
+            DBController._create_param_dict("email", email, True),
+            DBController._create_param_dict("pension", pension, False),
+            DBController._create_param_dict("monthly_income", monthly_income, False),
+            DBController._create_param_dict(
+                "marital_status", self._get_id_by_name(marital_status, db_names.MARITAL_STATUS_TABLE), False
+            ),
+            DBController._create_param_dict(
+                "disability", self._get_id_by_name(disability, db_names.DISABILITY_TABLE), False
+            ),
+            DBController._create_param_dict(
+                "citizenship", self._get_id_by_name(citizenship, db_names.CITIZENSHIP_TABLE), False
+            ),
+            DBController._create_param_dict(
+                "residence_city", self._get_id_by_name(residence_city, db_names.CITY_TABLE), False
+            ),
+            DBController._create_param_dict(
+                "registration_city", self._get_id_by_name(registration_city, db_names.CITY_TABLE), False
+            )
         ]
 
         self._write_to_db(db_names.PERSON_TABLE, person_data)

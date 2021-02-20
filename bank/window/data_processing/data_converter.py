@@ -16,3 +16,4 @@ def add_none_state_to_list(values):
     if None not in values:
         return [None] + values
     return values
+
