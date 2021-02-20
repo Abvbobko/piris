@@ -1,5 +1,5 @@
 import mysql.connector as mysql
-import bank.constants.creds as creds
+import bank.db.constants.creds as creds
 
 
 class DBController:
@@ -19,7 +19,7 @@ class DBController:
             database=database
         )
 
-    def check_passport_number(self, passport_series="AB", passport_number=2222222):
+    def is_passport_number_exists(self, passport_series, passport_number):
         params = [
             {
                 "field_name": "passport_series",
@@ -32,12 +32,12 @@ class DBController:
                 "quote_char": False
             }
         ]
-        found_records = self.find_records_by("Person", params)
+        found_records = self._select_records_by_parameters("Person", params)
         if found_records:
-            return False
+            return True
+        return False
 
-
-    def find_records_by(self, table_name, list_of_params):
+    def _select_records_by_parameters(self, table_name, list_of_params):
         """Find records with list_of_param parameters and return it
         :param table_name: name of the db table
         :param list_of_params: list with the following pattern:
@@ -55,6 +55,8 @@ class DBController:
                 quote_char: True
             without quote_char is value
             with quote_char is 'value' (or "value")
+
+            if there are no any parameters just pass empty list
         :return: list of found values
         """
 
@@ -66,7 +68,10 @@ class DBController:
             sql_search_params.append(f"{param['field_name']}={value}")
 
         sql_where_params = " AND ".join(sql_search_params)
-        sql_request = f"SELECT * FROM {table_name} WHERE {sql_where_params}"
+
+        sql_request = f"SELECT * FROM {table_name}"
+        if sql_where_params:
+            sql_request += f" WHERE {sql_where_params}"
 
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
@@ -80,8 +85,7 @@ class DBController:
         return tables
 
     def _get_all_rows_from_table(self, table_name):
-        self.cursor.execute(f"SELECT * FROM {table_name}")
-        return list(self.cursor.fetchall())
+        return self._select_records_by_parameters(table_name, [])
 
     def get_cities(self):
         return self._get_all_rows_from_table("city")

@@ -6,5 +6,5 @@ WIN_TITLE = "BANK"
 MODES = ["Добавление", "Редактирование", "Удаление"]
 CURRENT_MODE = 0
 
-UI_PATH = '../window_view/window.ui'
+UI_PATH = '../../window_view/window.ui'
 

@@ -1,8 +1,8 @@
 import bank.window.constants.field_constants as field_const
 import bank.window.constants.window_constants as win_const
 
-import bank.db_controller as db_controller
-import bank.constants.creds as creds
+import bank.db.db_controller as db_controller
+import bank.db.constants.creds as creds
 import bank.window.data_processing.fields_validator as validator
 import bank.window.data_processing.fields_prevalidator as prevalidator
 import bank.window.data_processing.data_converter as data_converter
@@ -236,13 +236,25 @@ class MainWindow(QMainWindow):
 
         return None
 
+    def validate_fields_with_db(self):
+        passport_series = self.passport_series_edit.text()
+        passport_number = int(self.passport_number_edit.text())
+        if self.db.is_passport_number_exists(passport_series=passport_series, passport_number=passport_number):
+            return "Паспорт с таким номером и серией уже существует."
+        return None
+
     def add_button_click(self):
         print('add')
         error = self.validate_fields()
+        error = '' ########################### todo: delete this row
         if error:
             MainWindow.call_error_box(error_text=error)
-        else:
-            print("OK")
+            return
+        error = self.validate_fields_with_db()
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        print("OK")
 
     def update_button_click(self):
         print('update')
