@@ -1,5 +1,6 @@
 import mysql.connector as mysql
 import bank.db.constants.creds as creds
+import bank.db.constants.db_names as db_names
 
 
 class DBController:
@@ -32,7 +33,7 @@ class DBController:
                 "quote_char": False
             }
         ]
-        found_records = self._select_records_by_parameters("Person", params)
+        found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
         if found_records:
             return True
         return False
@@ -88,16 +89,16 @@ class DBController:
         return self._select_records_by_parameters(table_name, [])
 
     def get_cities(self):
-        return self._get_all_rows_from_table("city")
+        return self._get_all_rows_from_table(db_names.CITY_TABLE)
 
     def get_citizenships(self):
-        return self._get_all_rows_from_table("citizenship")
+        return self._get_all_rows_from_table(db_names.CITIZENSHIP_TABLE)
 
     def get_marital_status(self):
-        return self._get_all_rows_from_table("maritalstatus")
+        return self._get_all_rows_from_table(db_names.MARITAL_STATUS_TABLE)
 
     def get_disabilities(self):
-        return self._get_all_rows_from_table("disability")
+        return self._get_all_rows_from_table(db_names.DISABILITY_TABLE)
 
 
 if __name__ == '__main__':
