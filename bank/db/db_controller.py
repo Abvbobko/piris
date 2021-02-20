@@ -145,20 +145,27 @@ class DBController:
         tables = [table for (table, ) in self.cursor.fetchall()]
         return tables
 
+    @staticmethod
+    def get_names_from_values(values):
+        return [item[1] for item in values] if values else []
+
     def _get_all_rows_from_table(self, table_name):
         return self._select_records_by_parameters(table_name, [])
 
+    def _get_name_list(self, table_name):
+        return DBController.get_names_from_values(self._get_all_rows_from_table(table_name))
+
     def get_cities(self):
-        return self._get_all_rows_from_table(db_names.CITY_TABLE)
+        return self._get_name_list(db_names.CITY_TABLE)
 
     def get_citizenships(self):
-        return self._get_all_rows_from_table(db_names.CITIZENSHIP_TABLE)
+        return self._get_name_list(db_names.CITIZENSHIP_TABLE)
 
     def get_marital_status(self):
-        return self._get_all_rows_from_table(db_names.MARITAL_STATUS_TABLE)
+        return self._get_name_list(db_names.MARITAL_STATUS_TABLE)
 
     def get_disabilities(self):
-        return self._get_all_rows_from_table(db_names.DISABILITY_TABLE)
+        return self._get_name_list(db_names.DISABILITY_TABLE)
 
 
 if __name__ == '__main__':

@@ -12,5 +12,7 @@ def to_upper(string):
     return string.upper()
 
 
-def get_names_from_values(values):
-    return [None] + [item[1] for item in values] if values else []
+def add_none_state_to_list(values):
+    if None not in values:
+        return [None] + values
+    return values

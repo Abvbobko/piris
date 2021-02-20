@@ -23,7 +23,7 @@ def set_string_edit(edit, field_name=None,
 
 
 def set_combobox(combobox, db_values, field_name):
-    db_values_names = data_converter.get_names_from_values(db_values)
+    db_values_names = data_converter.add_none_state_to_list(db_values)
     combobox.db_values = db_values
     combobox.clear()
     combobox.addItems(db_values_names)
