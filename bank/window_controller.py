@@ -62,15 +62,8 @@ class MainWindow(QMainWindow):
         # add dates constraints
         today = datetime.date.today()
         min_date = const.MIN_DATE
-        min_date_qdate = QDate(min_date.year, min_date.month, min_date.day)
-        max_date_qdate = QDate(today.year, today.month, today.day)
-        self.birth_date_edit.setMinimumDate(min_date_qdate)
-        self.birth_date_edit.setMaximumDate(max_date_qdate)
-        self.birth_date_edit.field_name = "Дата рождения"
-
-        self.issue_date_edit.setMinimumDate(min_date_qdate)
-        self.issue_date_edit.setMaximumDate(max_date_qdate)
-        self.issue_date_edit.field_name = "Дата выдачи"
+        MainWindow.set_date_edit(self.birth_date_edit, min_date, max_date=today, field_name="Дата рождения")
+        MainWindow.set_date_edit(self.issue_date_edit, min_date, max_date=today, field_name="Дата выдачи")
 
         # add constraints for the string edits
         MainWindow.set_string_edit(
@@ -155,6 +148,14 @@ class MainWindow(QMainWindow):
         combobox.addItems(db_values_names)
         combobox.field_name = field_name
 
+    @staticmethod
+    def set_date_edit(date_edit, min_date, max_date, field_name):
+        min_date_qdate = QDate(min_date.year, min_date.month, min_date.day)
+        max_date_qdate = QDate(max_date.year, max_date.month, max_date.day)
+        date_edit.setMinimumDate(min_date_qdate)
+        date_edit.setMaximumDate(max_date_qdate)
+        date_edit.field_name = field_name
+
     def change_mode(self, value):
         self.window_current_mode = value
         if value == self.window_modes[0]:
@@ -183,7 +184,7 @@ class MainWindow(QMainWindow):
     @staticmethod
     def validate_string_edit(edit):
         error = validator.string_validator(
-            string=edit.text(),
+            text=edit.text(),
             field_name=edit.field_name,
             mask=edit.mask_regex,
             max_length=edit.maxLength(),
@@ -196,6 +197,22 @@ class MainWindow(QMainWindow):
         error = validator.combobox_validator(
             combobox.currentText(),
             field_name=combobox.field_name
+        )
+        return error
+
+    @staticmethod
+    def set_text_to_edit(edit, text, transform_func=None):
+        if transform_func:
+            text = transform_func(text)
+        edit.setText(text)
+
+    @staticmethod
+    def validate_date_edit(edit):
+        date = edit.date().toPyDate()
+        min_date = edit.minimumDate().toPyDate()
+        max_date = edit.maximumDate().toPyDate()
+        error = validator.date_validator(
+            date=date, field_name=edit.field_name, min_date=min_date, max_date=max_date
         )
         return error
 
@@ -234,37 +251,17 @@ class MainWindow(QMainWindow):
             if error:
                 return error
 
-        # fix surname
-        surname = data_converter.convert_name(self.surname_edit.text())
-        self.surname_edit.setText(surname)
+        # change surname, name and patronymic to the fist big letter format
+        names_edit_list = [self.surname_edit, self.name_edit, self.patronymic_edit]
+        for edit in names_edit_list:
+            MainWindow.set_text_to_edit(edit, edit.text(), transform_func=data_converter.convert_name)
 
-        # fix name
-        name = data_converter.convert_name(self.name_edit.text())
-        self.name_edit.setText(name)
-
-        # fix patronymic
-        patronymic = data_converter.convert_name(self.patronymic_edit.text())
-        self.patronymic_edit.setText(patronymic)
-
-        # validate birth_date
-        date = self.birth_date_edit.date().toPyDate()
-        min_date = self.birth_date_edit.minimumDate().toPyDate()
-        max_date = self.birth_date_edit.maximumDate().toPyDate()
-        error = validator.date_validator(
-            date=date, field_name=self.birth_date_edit.field_name, min_date=min_date, max_date=max_date
-        )
-        if error:
-            return error
-
-        # validate issue_date
-        date = self.issue_date_edit.date().toPyDate()
-        min_date = self.issue_date_edit.minimumDate().toPyDate()
-        max_date = self.issue_date_edit.maximumDate().toPyDate()
-        error = validator.date_validator(
-            date=date, field_name=self.issue_date_edit.field_name, min_date=min_date, max_date=max_date
-        )
-        if error:
-            return error
+        # validate birth_date and issue_date
+        date_edit_list = [self.birth_date_edit, self.issue_date_edit]
+        for date_edit in date_edit_list:
+            error = MainWindow.validate_date_edit(date_edit)
+            if error:
+                return error
 
         # validate sex
         error = validator.radio_button_validator(
@@ -283,8 +280,9 @@ class MainWindow(QMainWindow):
             return error
 
         # fix passport series
-        passport_series = data_converter.to_upper(self.passport_series_edit.text())
-        self.passport_series_edit.setText(passport_series)
+        MainWindow.set_text_to_edit(
+            self.passport_series_edit, self.passport_series_edit.text(), transform_func=data_converter.to_upper
+        )
 
         # validate passport_id
         birth_date = self.birth_date_edit.date().toPyDate()
@@ -331,7 +329,6 @@ def except_hook(cls, exception, traceback):
 
 
 if __name__ == '__main__':
-
     # enable error messages
     sys.excepthook = except_hook
 
