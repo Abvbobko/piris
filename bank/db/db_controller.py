@@ -38,6 +38,66 @@ class DBController:
             return True
         return False
 
+    def is_passport_id_exists(self, passport_id):
+        params = [{
+            "field_name": "identification_number",
+            "field_value": passport_id,
+            "quote_char": True
+        }]
+        found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
+        if found_records:
+            return True
+        return False
+
+    @staticmethod
+    def _quote_value(value, needs_quote_char):
+        return f'"{value}"' if needs_quote_char else f'{value}'
+
+    def insert_person(self):
+        person_data = {
+            "": "",
+            "": "",
+            "": "",
+            "": "",
+            "": "",
+            "": "",
+            "": ""
+        }
+
+        self._write_to_db(db_names.PERSON_TABLE, None)
+
+    def _write_to_db(self, table_name, dict_of_params):
+        """Insert new record into db table
+        :param table_name: name of the db table
+        :param dict_of_params: list with the following pattern:
+                    {
+                        field_name: field_name_value, (string)
+                        field_value: field_value_value, (any type)
+                        quote_char: quote_char_value (bool)
+                    }
+        :return:
+        """
+        # INSERT INTO `table_name`(column_1,column_2,...) VALUES (value_1,value_2,...);
+        sql_column_names = []
+        sql_insert_values = []
+
+        if dict_of_params["field_value"]:
+            value = DBController._quote_value(dict_of_params["field_value"], dict_of_params["quote_char"])
+            sql_column_names.append(dict_of_params['field_name'])
+            sql_insert_values.append(value)
+
+        sql_names = ",".join(sql_column_names)
+        sql_values = ",".join(sql_insert_values)
+
+        sql_insert_request = f"INSERT INTO {table_name} ({sql_names}) VALUES ({sql_values})"
+        try:
+            self.cursor.execute(sql_insert_request)
+            self.db.commit()
+        except mysql.Error as error:
+            return error
+
+        return None
+
     def _select_records_by_parameters(self, table_name, list_of_params):
         """Find records with list_of_param parameters and return it
         :param table_name: name of the db table
@@ -64,7 +124,7 @@ class DBController:
         sql_search_params = []
         for param in list_of_params:
             # add quote_char if needed and convert value to string
-            value = f'"{param["field_value"]}"' if param["quote_char"] else f'{param["field_value"]}'
+            value = DBController._quote_value(param["field_value"], param["quote_char"])
             # create string params like field=value
             sql_search_params.append(f"{param['field_name']}={value}")
 

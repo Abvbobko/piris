@@ -241,6 +241,9 @@ class MainWindow(QMainWindow):
         passport_number = int(self.passport_number_edit.text())
         if self.db.is_passport_number_exists(passport_series=passport_series, passport_number=passport_number):
             return "Паспорт с таким номером и серией уже существует."
+        passport_id = self.identification_number_edit.text()
+        if self.db.is_passport_id_exists(passport_id=passport_id):
+            return "Паспорт с таким идентификационным номером уже существует."
         return None
 
     def add_button_click(self):
