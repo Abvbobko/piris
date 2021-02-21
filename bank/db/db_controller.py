@@ -227,7 +227,7 @@ class DBController:
     def get_disabilities(self):
         return self._get_name_list(db_names.DISABILITY_TABLE)
 
-    def _convet_person_record(self, record, header):
+    def _convert_person_record(self, record, header):
         converted_record = []
         for i in range(len(record)):
             if header[i] == "marital_status":
@@ -245,7 +245,7 @@ class DBController:
     def _convert_person_records(self, records, header):
         converted_records = []
         for record in records:
-            converted_records.append(self._convet_person_record(record, header))
+            converted_records.append(self._convert_person_record(record, header))
         return tuple(converted_records)
 
     def get_clients(self):
@@ -263,6 +263,14 @@ class DBController:
             "columns": header,
             "records": converted_records
         }
+
+    def _delete_from_table_by_field(self, table_name, field_name, field_value):
+        sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"
+        self.cursor.execute(sql_request)
+        self.db.commit()
+
+    def delete_person_by_id(self, person_id):
+        self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
 
 
 if __name__ == '__main__':

@@ -159,16 +159,19 @@ class MainWindow(QMainWindow):
             self.enable_id_field(False)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.add_button_click)
+            self.add_button.setText("Добавить")
         elif value == self.window_modes[1]:
             # update mode
             self.enable_id_field(True)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.update_button_click)
+            self.add_button.setText("Редактировать")
         elif value == self.window_modes[2]:
             # delete mode
             self.enable_id_field(True)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.delete_button_click)
+            self.add_button.setText("Удалить")
         print(f'change on {value}')
 
     @staticmethod
@@ -340,6 +343,14 @@ class MainWindow(QMainWindow):
 
     def delete_button_click(self):
         print('delete')
+        edit_list = [self.id_edit]
+        error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        self.db.delete_person_by_id(int(self.id_edit.text()))
+        MainWindow.call_ok_box(ok_text="Клиент успешно удален.")
+        self.id_edit.clear()
 
     def fill_clients_table(self):
         table_values = self.db.get_clients()
@@ -349,16 +360,16 @@ class MainWindow(QMainWindow):
         # remove column idPerson (#todo: подумать, мб оставить и по ней сделать удаление просто)
         #  todo: (можно даже внутри вкладки)
 
-        self.clients_table.setColumnCount(len(headers) - 1)
+        self.clients_table.setColumnCount(len(headers))
         self.clients_table.setRowCount(len(records))
-        self.clients_table.setHorizontalHeaderLabels(headers[1:])
+        self.clients_table.setHorizontalHeaderLabels(headers)
 
         if len(records) == 0:
             return
         records = db_data_converter.convert_records(records, headers)
         for i in range(len(records)):
-            for j in range(1, len(records[i])):
-                self.clients_table.setItem(i, j-1, QTableWidgetItem(str(records[i][j])))
+            for j in range(len(records[i])):
+                self.clients_table.setItem(i, j, QTableWidgetItem(str(records[i][j])))
 
     def change_tab(self, index):
         if index == win_const.CLIENT_LIST_TAB_INDEX:
