@@ -122,7 +122,6 @@ class DBController:
         sql_values = ",".join(sql_insert_values)
 
         sql_insert_request = f"INSERT INTO {table_name} ({sql_names}) VALUES ({sql_values})"
-        print(sql_insert_request)
         try:
             self.cursor.execute(sql_insert_request)
             self.db.commit()
@@ -265,12 +264,16 @@ class DBController:
         }
 
     def _delete_from_table_by_field(self, table_name, field_name, field_value):
-        sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"
-        self.cursor.execute(sql_request)
-        self.db.commit()
+        try:
+            sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"
+            self.cursor.execute(sql_request)
+            self.db.commit()
+        except mysql.Error as error:
+            return str(error)
+        return None
 
     def delete_person_by_id(self, person_id):
-        self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
+        return self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
 
 
 if __name__ == '__main__':

@@ -348,7 +348,10 @@ class MainWindow(QMainWindow):
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-        self.db.delete_person_by_id(int(self.id_edit.text()))
+        error = self.db.delete_person_by_id(int(self.id_edit.text()))
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
         MainWindow.call_ok_box(ok_text="Клиент успешно удален.")
         self.id_edit.clear()
 
