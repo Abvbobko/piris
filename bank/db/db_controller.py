@@ -93,7 +93,7 @@ class DBController:
             )
         ]
 
-        self._write_to_db(db_names.PERSON_TABLE, person_data)
+        return self._write_to_db(db_names.PERSON_TABLE, person_data)
 
     def _write_to_db(self, table_name, list_of_params):
         """Insert new record into db table
@@ -113,7 +113,7 @@ class DBController:
         sql_column_names = []
         sql_insert_values = []
         for param in list_of_params:
-            if param["field_value"]:
+            if param["field_value"] is not None:
                 value = DBController._quote_value(param["field_value"], param["quote_char"])
                 sql_column_names.append(param['field_name'])
                 sql_insert_values.append(value)
@@ -122,11 +122,12 @@ class DBController:
         sql_values = ",".join(sql_insert_values)
 
         sql_insert_request = f"INSERT INTO {table_name} ({sql_names}) VALUES ({sql_values})"
+        print(sql_insert_request)
         try:
             self.cursor.execute(sql_insert_request)
             self.db.commit()
         except mysql.Error as error:
-            return error
+            return str(error)
 
         return None
 

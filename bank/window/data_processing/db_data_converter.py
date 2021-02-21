@@ -22,8 +22,3 @@ def convert_date_to_the_db_form(date, date_format="%Y-%m-%d"):
 
 def get_optional_value(edit):
     return edit.text() if edit.text() else None
-
-
-
-
-

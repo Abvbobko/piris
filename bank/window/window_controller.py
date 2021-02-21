@@ -150,13 +150,22 @@ class MainWindow(QMainWindow):
         print(f'change on {value}')
 
     @staticmethod
+    def call_message_box(title="", text="", icon=QMessageBox.NoIcon):
+        message_box = QMessageBox()
+        message_box.setIcon(icon)
+        message_box.setText(text)
+        message_box.setWindowTitle(title)
+        message_box.exec_()
+
+    @staticmethod
     def call_error_box(error_title="Ошибка", error_text=""):
         print("ERROR")
-        message_box = QMessageBox()
-        message_box.setIcon(QMessageBox.Critical)
-        message_box.setText(error_text)
-        message_box.setWindowTitle(error_title)
-        message_box.exec_()
+        MainWindow.call_message_box(error_title, error_text, QMessageBox.Critical)
+
+    @staticmethod
+    def call_ok_box(ok_title="ОK", ok_text=""):
+        print("OK")
+        MainWindow.call_message_box(ok_title, ok_text, QMessageBox.Information)
 
     def validate_fields(self):
         # validate string data edits
@@ -261,7 +270,7 @@ class MainWindow(QMainWindow):
         monthly_income = db_data_converter.get_optional_value(self.monthly_income_edit)
         monthly_income = float(monthly_income) if monthly_income else None
         pension = int(self.pension_checkbox.isChecked())
-        self.db.insert_person(
+        return self.db.insert_person(
             first_name=self.name_edit.text(),
             surname=self.surname_edit.text(),
             patronymic=self.patronymic_edit.text(),
@@ -289,7 +298,7 @@ class MainWindow(QMainWindow):
     def add_button_click(self):
         print('add')
         error = self.validate_fields()
-        error = '' ########################### todo: delete this row
+        # error = '' ########################### todo: delete this row
         if error:
             MainWindow.call_error_box(error_text=error)
             return
@@ -297,8 +306,11 @@ class MainWindow(QMainWindow):
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-
-        print("OK")
+        error = self.add_person()
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
 
     def update_button_click(self):
         print('update')
