@@ -10,7 +10,7 @@ import bank.window.fields_setter as fields_setter
 import bank.window.data_processing.db_data_converter as db_data_converter
 
 from PyQt5 import QtGui, uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QAbstractItemView
 from PyQt5.QtCore import QRegExp
 
 import sys
@@ -132,6 +132,11 @@ class MainWindow(QMainWindow):
         # buttons functionality
         self.add_button.clicked.connect(self.add_button_click)
         self.mode_combobox.currentTextChanged.connect(self.change_mode)
+
+        self.tabs.currentChanged.connect(self.change_tab)
+
+        # disable table editing by user
+        self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     def change_mode(self, value):
         self.window_current_mode = value
@@ -297,26 +302,50 @@ class MainWindow(QMainWindow):
 
     def add_button_click(self):
         print('add')
-        error = self.validate_fields()
+        error = self.validate_fields() # todo: раскомментить
         # error = '' ########################### todo: delete this row
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-        error = self.validate_fields_with_db()
+        error = self.validate_fields_with_db() # todo: раскомментить
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-        error = self.add_person()
+        error = self.add_person() # todo: раскомментить
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
+        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.") # todo: раскомментить
+        # print(self.db.get_clients())
 
     def update_button_click(self):
         print('update')
 
     def delete_button_click(self):
         print('delete')
+
+    def fill_clients_table(self):
+        table_values = self.db.get_clients()
+        headers = table_values["columns"]
+        records = table_values["records"]
+
+        # remove column idPerson (#todo: подумать, мб оставить и по ней сделать удаление просто)
+        #  todo: (можно даже внутри вкладки)
+
+        self.clients_table.setColumnCount(len(headers) - 1)
+        self.clients_table.setRowCount(len(records))
+        self.clients_table.setHorizontalHeaderLabels(headers[1:])
+
+        if len(records) == 0:
+            return
+        records = db_data_converter.convert_records(records, headers)
+        for i in range(len(records)):
+            for j in range(1, len(records[i])):
+                self.clients_table.setItem(i, j-1, QTableWidgetItem(str(records[i][j])))
+
+    def change_tab(self, index):
+        if index == win_const.CLIENT_LIST_TAB_INDEX:
+            self.fill_clients_table()
 
 
 def except_hook(cls, exception, traceback):

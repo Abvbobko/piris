@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <property name="autoFillBackground">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabs">
@@ -26,9 +26,12 @@
       <height>601</height>
      </rect>
     </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
     <widget class="QWidget" name="adding_tab">
      <attribute name="title">
-      <string>Tab 1</string>
+      <string>Добавление клиента</string>
      </attribute>
      <widget class="QLabel" name="surname_label">
       <property name="geometry">
@@ -667,10 +670,23 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="client_list_tab">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>Список клиентов</string>
      </attribute>
+     <widget class="QTableWidget" name="clients_table">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>521</width>
+        <height>531</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

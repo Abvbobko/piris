@@ -187,6 +187,24 @@ class DBController:
                 break
         return value_id
 
+    def _get_name_by_id(self, value_id, table_name):
+        map_list = self._get_all_rows_from_table(table_name)
+        value_name = None
+        for record in map_list:
+            if record[0] == value_id:
+                value_name = record[1]
+                break
+        return value_name
+
+    def get_citizenship_by_id(self, citizenship_id):
+        return self._get_name_by_id(citizenship_id, db_names.CITIZENSHIP_TABLE)
+
+    def get_marital_status_by_id(self, marital_status_id):
+        return self._get_name_by_id(marital_status_id, db_names.MARITAL_STATUS_TABLE)
+
+    def get_disability_by_id(self, disability_id):
+        return self._get_name_by_id(disability_id, db_names.DISABILITY_TABLE)
+
     @staticmethod
     def get_names_from_values(values):
         return [item[1] for item in values] if values else []
@@ -208,6 +226,43 @@ class DBController:
 
     def get_disabilities(self):
         return self._get_name_list(db_names.DISABILITY_TABLE)
+
+    def _convet_person_record(self, record, header):
+        converted_record = []
+        for i in range(len(record)):
+            if header[i] == "marital_status":
+                converted_record.append(self._get_name_by_id(record[i], db_names.MARITAL_STATUS_TABLE))
+            elif header[i] == "disability":
+                converted_record.append(self._get_name_by_id(record[i], db_names.DISABILITY_TABLE))
+            elif header[i] == "citizenship":
+                converted_record.append(self._get_name_by_id(record[i], db_names.CITIZENSHIP_TABLE))
+            elif header[i] == "residence_city" or header[i] == "registration_city":
+                converted_record.append(self._get_name_by_id(record[i], db_names.CITY_TABLE))
+            else:
+                converted_record.append(record[i])
+        return tuple(converted_record)
+
+    def _convert_person_records(self, records, header):
+        converted_records = []
+        for record in records:
+            converted_records.append(self._convet_person_record(record, header))
+        return tuple(converted_records)
+
+    def get_clients(self):
+        """Return dict {
+            "columns": (column_1_name, column_2_name, ...)
+            "records": (record_1, record_2, ...)
+        }
+        where record_# is tuple (value_1, value_2, ...)
+        :return: dictionary with values
+        """
+        clients = self._get_all_rows_from_table(db_names.PERSON_TABLE)
+        header = self.cursor.column_names
+        converted_records = self._convert_person_records(clients, header)
+        return {
+            "columns": header,
+            "records": converted_records
+        }
 
 
 if __name__ == '__main__':
