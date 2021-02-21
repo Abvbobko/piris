@@ -650,6 +650,75 @@
      <string>Режим:</string>
     </property>
    </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>127</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Tab 1</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+    </widget>
+   </widget>
+   <zorder>tabWidget</zorder>
+   <zorder>surname_label</zorder>
+   <zorder>name_label</zorder>
+   <zorder>patronymic_label</zorder>
+   <zorder>birth_date_label</zorder>
+   <zorder>sex_label</zorder>
+   <zorder>passport_series_label</zorder>
+   <zorder>surname_edit</zorder>
+   <zorder>name_edit</zorder>
+   <zorder>patronymic_edit</zorder>
+   <zorder>m_radio_button</zorder>
+   <zorder>w_radio_button</zorder>
+   <zorder>birth_date_edit</zorder>
+   <zorder>passport_series_edit</zorder>
+   <zorder>passport_number_label</zorder>
+   <zorder>passport_number_edit</zorder>
+   <zorder>issued_by_label</zorder>
+   <zorder>issued_by_edit</zorder>
+   <zorder>issue_date_edit</zorder>
+   <zorder>issue_date_label</zorder>
+   <zorder>identification_number_label</zorder>
+   <zorder>identification_number_edit</zorder>
+   <zorder>birth_place_label</zorder>
+   <zorder>birth_place_edit</zorder>
+   <zorder>residence_city_label</zorder>
+   <zorder>residence_city_combobox</zorder>
+   <zorder>residense_address_label</zorder>
+   <zorder>residence_address_edit</zorder>
+   <zorder>home_phone_label</zorder>
+   <zorder>home_phone_edit</zorder>
+   <zorder>mobile_phone_label</zorder>
+   <zorder>mobile_phone_edit</zorder>
+   <zorder>email_label</zorder>
+   <zorder>email_edit</zorder>
+   <zorder>registration_city_combobox</zorder>
+   <zorder>registration_city_label</zorder>
+   <zorder>citizenship_combobox</zorder>
+   <zorder>citizenship_label</zorder>
+   <zorder>marital_status_combobox</zorder>
+   <zorder>marital_status_label</zorder>
+   <zorder>disability_combobox</zorder>
+   <zorder>disability_label</zorder>
+   <zorder>monthly_income_edit</zorder>
+   <zorder>monthly_income_label</zorder>
+   <zorder>pension_checkbox</zorder>
+   <zorder>add_button</zorder>
+   <zorder>edit_button</zorder>
+   <zorder>mode_combobox</zorder>
+   <zorder>mode_label</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">
