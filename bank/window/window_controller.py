@@ -138,18 +138,35 @@ class MainWindow(QMainWindow):
         # disable table editing by user
         self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        fields_setter.set_string_edit(
+            self.id_edit, field_name="id", mask_regex=field_const.ID_MASK,
+            max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
+        )
+
+    @staticmethod
+    def enable_field(label, edit, enable):
+        label.setEnabled(enable)
+        edit.setEnabled(enable)
+
+    def enable_id_field(self, enable):
+        MainWindow.enable_field(self.id_label, self.id_edit, enable)
+
     def change_mode(self, value):
         self.window_current_mode = value
         if value == self.window_modes[0]:
             # add mode
+            self.id_edit.clear()
+            self.enable_id_field(False)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.add_button_click)
         elif value == self.window_modes[1]:
             # update mode
+            self.enable_id_field(True)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.update_button_click)
         elif value == self.window_modes[2]:
             # delete mode
+            self.enable_id_field(True)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.delete_button_click)
         print(f'change on {value}')
