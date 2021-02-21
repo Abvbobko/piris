@@ -136,16 +136,16 @@ class DBController:
         :param list_of_params: list with the following pattern:
                 [
                     {
-                        field_name: field_name_value, (string)
-                        field_value: field_value_value, (any type)
-                        quote_char: quote_char_value (bool)
+                        "field_name": field_name_value, (string)
+                        "field_value": field_value_value, (any type)
+                        "quote_char": quote_char_value (bool)
                     },
                     ...
                 ]
             example:
-                field_name: passport_series
-                field_value: 2222222
-                quote_char: True
+                "field_name": passport_series
+                "field_value": 2222222
+                "quote_char": True
             without quote_char is value
             with quote_char is 'value' (or "value")
 
@@ -168,6 +168,21 @@ class DBController:
 
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
+
+    def get_person(self, person_id):
+        params = [{
+            "field_name": "idPerson",
+            "field_value": person_id,
+            "quote_char": False
+        }]
+        person = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
+        header = self.cursor.column_names
+        converted_records = self._convert_person_records(person, header)
+
+        return {
+            "columns": header,
+            "records": converted_records
+        }
 
     def close_connection(self):
         self.db.close()

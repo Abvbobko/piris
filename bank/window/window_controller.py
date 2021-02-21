@@ -8,6 +8,7 @@ import bank.window.data_processing.fields_prevalidator as prevalidator
 import bank.window.data_processing.data_converter as data_converter
 import bank.window.fields_setter as fields_setter
 import bank.window.data_processing.db_data_converter as db_data_converter
+import bank.window.data_processing.fields_filler as field_filler
 
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QAbstractItemView
@@ -143,6 +144,8 @@ class MainWindow(QMainWindow):
             max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
         )
 
+        self.find_button.clicked.connect(self.find_button_click)
+
     @staticmethod
     def enable_field(label, edit, enable):
         label.setEnabled(enable)
@@ -157,22 +160,77 @@ class MainWindow(QMainWindow):
             # add mode
             self.id_edit.clear()
             self.enable_id_field(False)
+            self.find_button.setEnabled(False)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.add_button_click)
             self.add_button.setText("Добавить")
         elif value == self.window_modes[1]:
             # update mode
             self.enable_id_field(True)
+            self.find_button.setEnabled(True)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.update_button_click)
             self.add_button.setText("Редактировать")
         elif value == self.window_modes[2]:
             # delete mode
             self.enable_id_field(True)
+            self.find_button.setEnabled(False)
             self.add_button.clicked.disconnect()
             self.add_button.clicked.connect(self.delete_button_click)
             self.add_button.setText("Удалить")
         print(f'change on {value}')
+
+    def find_button_click(self):
+        edit_list = [self.id_edit]
+        error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        person_record = self.db.get_person(int(self.id_edit.text()))
+        record = person_record["records"]
+        header = person_record["columns"]
+
+        if not record:
+            error = "Запись не найдена."
+            MainWindow.call_error_box(error_text=error)
+            return
+        self.fill_data_edits(record[0], header)
+
+    def _map_column_name_to_edit(self, column_name):
+        mapper = {
+            "surname": self.surname_edit,
+            "first_name": self.name_edit,
+            "patronymic": self.patronymic_edit,
+            "birth_date": self.birth_date_edit,
+            "sex": [self.m_radio_button, self.w_radio_button],
+            "passport_series": self.passport_series_edit,
+            "passport_number": self.passport_number_edit,
+            "issued_by": self.issued_by_edit,
+            "issue_date": self.issue_date_edit,
+            "identification_number": self.identification_number_edit,
+            "birth_place": self.birth_place_edit,
+            "residence_address": self.residence_address_edit,
+            "home_phone": self.home_phone_edit,
+            "mobile_phone": self.mobile_phone_edit,
+            "email": self.email_edit,
+            "pension": self.pension_checkbox,
+            "monthly_income": self.monthly_income_edit,
+            "marital_status": self.marital_status_combobox,
+            "disability": self.disability_combobox,
+            "citizenship": self.citizenship_combobox,
+            "residence_city": self.residence_city_combobox,
+            "registration_city": self.registration_city_combobox
+        }
+
+        if column_name not in mapper.keys():
+            return None
+        return mapper[column_name]
+
+    def fill_data_edits(self, record, header):
+        for i in range(len(record)):
+            edit = self._map_column_name_to_edit(header[i])
+            if edit:
+                field_filler.fill_edit(edit, header[i], record[i])
 
     @staticmethod
     def call_message_box(title="", text="", icon=QMessageBox.NoIcon):
@@ -359,9 +417,6 @@ class MainWindow(QMainWindow):
         table_values = self.db.get_clients()
         headers = table_values["columns"]
         records = table_values["records"]
-
-        # remove column idPerson (#todo: подумать, мб оставить и по ней сделать удаление просто)
-        #  todo: (можно даже внутри вкладки)
 
         self.clients_table.setColumnCount(len(headers))
         self.clients_table.setRowCount(len(records))
