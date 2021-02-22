@@ -189,7 +189,6 @@ class MainWindow(QMainWindow):
         person_record = self.db.get_person(int(self.id_edit.text()))
         record = person_record["records"]
         header = person_record["columns"]
-
         if not record:
             error = "Запись не найдена."
             MainWindow.call_error_box(error_text=error)
@@ -202,7 +201,7 @@ class MainWindow(QMainWindow):
             "first_name": self.name_edit,
             "patronymic": self.patronymic_edit,
             "birth_date": self.birth_date_edit,
-            "sex": [self.m_radio_button, self.w_radio_button],
+            "sex": {'man': self.m_radio_button, 'woman': self.w_radio_button},
             "passport_series": self.passport_series_edit,
             "passport_number": self.passport_number_edit,
             "issued_by": self.issued_by_edit,
