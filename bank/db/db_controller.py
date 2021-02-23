@@ -56,7 +56,7 @@ class DBController:
     def insert_person(self, first_name, surname, patronymic, birth_date, sex, passport_series, passport_number,
                       issued_by, issue_date, identification_number, birth_place, residence_address, home_phone,
                       mobile_phone, email, pension, monthly_income, marital_status, disability, citizenship,
-                      residence_city, registration_city):
+                      residence_city, registration_city, update_mode=False, person_id=None):
 
         person_data = [
             DBController._create_param_dict("first_name", first_name, True),
@@ -93,7 +93,51 @@ class DBController:
             )
         ]
 
+        if update_mode and person_id is not None:
+            return self._update_record(db_names.PERSON_TABLE, person_data, person_id)
+
         return self._write_to_db(db_names.PERSON_TABLE, person_data)
+
+    def _update_record(self, table_name, list_of_params, person_id):
+        """Update record in the db table
+        :param table_name: name of the db table
+        :param list_of_params: list with the following pattern:
+                [
+                    {
+                        field_name: field_name_value, (string)
+                        field_value: field_value_value, (any type)
+                        quote_char: quote_char_value (bool)
+                    },
+                    ...
+                ]
+        :return:
+        """
+
+        # UPDATE table_name SET column_name1 = expr1, column_name2 = expr2 WHERE condition;
+
+        # sql_column_names = []
+        # sql_updated_values = []
+        sql_setted_params = []
+        for param in list_of_params:
+            # todo: записывать NULL
+            # todo: надо обязательно протестить:
+                # todo: редактирование с норм на NULL
+            value = param["field_value"]
+            if param["field_value"] is not None:
+                value = DBController._quote_value(param["field_value"], param["quote_char"])
+            sql_setted_params.append(f"{param['field_name']}={value}")
+
+        sql_settled_params = ",".join(sql_setted_params)
+
+        sql_update_request = f"UPDATE {table_name} SET {sql_settled_params} WHERE idPerson={person_id}"
+        try:
+            self.cursor.execute(sql_update_request)
+            self.db.commit()
+        except mysql.Error as error:
+            return str(error)
+
+        return None
+
 
     def _write_to_db(self, table_name, list_of_params):
         """Insert new record into db table

@@ -145,6 +145,7 @@ class MainWindow(QMainWindow):
         )
 
         self.find_button.clicked.connect(self._find_button_click)
+        self.updating_person_id = None
 
     @staticmethod
     def _enable_field(label, edit, enable):
@@ -156,6 +157,7 @@ class MainWindow(QMainWindow):
 
     def _change_mode(self, value):
         self.window_current_mode = value
+        self.updating_person_id = None
         if value == self.window_modes[0]:
             # add mode
             self.id_edit.clear()
@@ -186,14 +188,17 @@ class MainWindow(QMainWindow):
         if error:
             MainWindow.call_error_box(error_text=error)
             return
-        person_record = self.db.get_person(int(self.id_edit.text()))
+        person_id = int(self.id_edit.text())
+        person_record = self.db.get_person(person_id)
         record = person_record["records"]
         header = person_record["columns"]
         if not record:
             error = "Запись не найдена."
             MainWindow.call_error_box(error_text=error)
+            self._clear_data_edits()
             return
         self._fill_data_edits(record[0], header)
+        self.updating_person_id = person_id
 
     def _get_mapper(self):
         return {
@@ -387,7 +392,7 @@ class MainWindow(QMainWindow):
     def _add_button_click(self):
         print('add')
         pipeline = [
-            self._validate_fields, 
+            self._validate_fields,
             self._validate_fields_with_db,
             self._add_person
         ]
@@ -396,15 +401,31 @@ class MainWindow(QMainWindow):
             if error:
                 MainWindow.call_error_box(error_text=error)
                 return
-        
+
         MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
         self._clear_data_edits()
 
-
     def _update_button_click(self):
         print('update')
-        self._clear_data_edits()
 
+        pipeline = [
+            self._validate_fields,
+            # todo: тут что-то другое? Тут валидировать, что нет ни у кого, кроме тебя.
+            # self._validate_fields_with_db,
+            # todo: тут функция _update_person?
+            # self._add_person
+        ]
+        # todo: можно заменить add person, в нее как-то передавать person_id и is_updating?
+        # todo: можно передавать через **kwargs
+        # todo: добавить кваргс во все пайплайновские функции  (тем самым решить и проблему с дб валидейшн)
+        for pipeline_func in pipeline:
+            error = pipeline_func()
+            if error:
+                MainWindow.call_error_box(error_text=error)
+                return
+
+        MainWindow.call_ok_box(ok_text="Клиент успешно обновлен.")
+        self._clear_data_edits()
 
     def _delete_button_click(self):
         print('delete')
