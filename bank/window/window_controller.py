@@ -131,10 +131,10 @@ class MainWindow(QMainWindow):
         self.w_radio_button.field_name = "Пол"
 
         # buttons functionality
-        self.add_button.clicked.connect(self.add_button_click)
-        self.mode_combobox.currentTextChanged.connect(self.change_mode)
+        self.add_button.clicked.connect(self._add_button_click)
+        self.mode_combobox.currentTextChanged.connect(self._change_mode)
 
-        self.tabs.currentChanged.connect(self.change_tab)
+        self.tabs.currentChanged.connect(self._change_tab)
 
         # disable table editing by user
         self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -144,43 +144,43 @@ class MainWindow(QMainWindow):
             max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
         )
 
-        self.find_button.clicked.connect(self.find_button_click)
+        self.find_button.clicked.connect(self._find_button_click)
 
     @staticmethod
-    def enable_field(label, edit, enable):
+    def _enable_field(label, edit, enable):
         label.setEnabled(enable)
         edit.setEnabled(enable)
 
-    def enable_id_field(self, enable):
-        MainWindow.enable_field(self.id_label, self.id_edit, enable)
+    def _enable_id_field(self, enable):
+        MainWindow._enable_field(self.id_label, self.id_edit, enable)
 
-    def change_mode(self, value):
+    def _change_mode(self, value):
         self.window_current_mode = value
         if value == self.window_modes[0]:
             # add mode
             self.id_edit.clear()
-            self.enable_id_field(False)
+            self._enable_id_field(False)
             self.find_button.setEnabled(False)
             self.add_button.clicked.disconnect()
-            self.add_button.clicked.connect(self.add_button_click)
+            self.add_button.clicked.connect(self._add_button_click)
             self.add_button.setText("Добавить")
         elif value == self.window_modes[1]:
             # update mode
-            self.enable_id_field(True)
+            self._enable_id_field(True)
             self.find_button.setEnabled(True)
             self.add_button.clicked.disconnect()
-            self.add_button.clicked.connect(self.update_button_click)
+            self.add_button.clicked.connect(self._update_button_click)
             self.add_button.setText("Редактировать")
         elif value == self.window_modes[2]:
             # delete mode
-            self.enable_id_field(True)
+            self._enable_id_field(True)
             self.find_button.setEnabled(False)
             self.add_button.clicked.disconnect()
-            self.add_button.clicked.connect(self.delete_button_click)
+            self.add_button.clicked.connect(self._delete_button_click)
             self.add_button.setText("Удалить")
         print(f'change on {value}')
 
-    def find_button_click(self):
+    def _find_button_click(self):
         edit_list = [self.id_edit]
         error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
         if error:
@@ -193,10 +193,10 @@ class MainWindow(QMainWindow):
             error = "Запись не найдена."
             MainWindow.call_error_box(error_text=error)
             return
-        self.fill_data_edits(record[0], header)
+        self._fill_data_edits(record[0], header)
 
-    def _map_column_name_to_edit(self, column_name):
-        mapper = {
+    def _get_mapper(self):
+        return {
             "surname": self.surname_edit,
             "first_name": self.name_edit,
             "patronymic": self.patronymic_edit,
@@ -221,15 +221,22 @@ class MainWindow(QMainWindow):
             "registration_city": self.registration_city_combobox
         }
 
+    def _map_column_name_to_edit(self, column_name):
+        mapper = self._get_mapper()
         if column_name not in mapper.keys():
             return None
         return mapper[column_name]
 
-    def fill_data_edits(self, record, header):
+    def _fill_data_edits(self, record, header):
         for i in range(len(record)):
             edit = self._map_column_name_to_edit(header[i])
             if edit:
                 field_filler.fill_edit(edit, header[i], record[i])
+
+    def _clear_data_edits(self):
+        mapper = self._get_mapper()
+        for edit in mapper.values():
+            field_filler.clear_edit(edit)
 
     @staticmethod
     def call_message_box(title="", text="", icon=QMessageBox.NoIcon):
@@ -249,7 +256,7 @@ class MainWindow(QMainWindow):
         print("OK")
         MainWindow.call_message_box(ok_title, ok_text, QMessageBox.Information)
 
-    def validate_fields(self):
+    def _validate_fields(self):
         # validate string data edits
         string_data_edits = [
             self.surname_edit,
@@ -328,7 +335,7 @@ class MainWindow(QMainWindow):
 
         return None
 
-    def validate_fields_with_db(self):
+    def _validate_fields_with_db(self):
         passport_series = self.passport_series_edit.text()
         passport_number = int(self.passport_number_edit.text())
         if self.db.is_passport_number_exists(passport_series=passport_series, passport_number=passport_number):
@@ -338,7 +345,7 @@ class MainWindow(QMainWindow):
             return "Паспорт с таким идентификационным номером уже существует."
         return None
 
-    def add_person(self):
+    def _add_person(self):
         sex = db_data_converter.convert_sex_to_db_form(
             self.m_radio_button.isChecked(),
             self.w_radio_button.isChecked()
@@ -377,28 +384,29 @@ class MainWindow(QMainWindow):
             registration_city=self.registration_city_combobox.currentText()
         )
 
-    def add_button_click(self):
+    def _add_button_click(self):
         print('add')
-        error = self.validate_fields() # todo: раскомментить
-        # error = '' ########################### todo: delete this row
-        if error:
-            MainWindow.call_error_box(error_text=error)
-            return
-        error = self.validate_fields_with_db() # todo: раскомментить
-        if error:
-            MainWindow.call_error_box(error_text=error)
-            return
-        error = self.add_person() # todo: раскомментить
-        if error:
-            MainWindow.call_error_box(error_text=error)
-            return
-        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.") # todo: раскомментить
-        # print(self.db.get_clients())
+        pipeline = [
+            self._validate_fields, 
+            self._validate_fields_with_db,
+            self._add_person
+        ]
+        for pipeline_func in pipeline:
+            error = pipeline_func()
+            if error:
+                MainWindow.call_error_box(error_text=error)
+                return
+        
+        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
+        self._clear_data_edits()
 
-    def update_button_click(self):
+
+    def _update_button_click(self):
         print('update')
+        self._clear_data_edits()
 
-    def delete_button_click(self):
+
+    def _delete_button_click(self):
         print('delete')
         edit_list = [self.id_edit]
         error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
@@ -412,7 +420,7 @@ class MainWindow(QMainWindow):
         MainWindow.call_ok_box(ok_text="Клиент успешно удален.")
         self.id_edit.clear()
 
-    def fill_clients_table(self):
+    def _fill_clients_table(self):
         table_values = self.db.get_clients()
         headers = table_values["columns"]
         records = table_values["records"]
@@ -428,9 +436,9 @@ class MainWindow(QMainWindow):
             for j in range(len(records[i])):
                 self.clients_table.setItem(i, j, QTableWidgetItem(str(records[i][j])))
 
-    def change_tab(self, index):
+    def _change_tab(self, index):
         if index == win_const.CLIENT_LIST_TAB_INDEX:
-            self.fill_clients_table()
+            self._fill_clients_table()
 
 
 def except_hook(cls, exception, traceback):

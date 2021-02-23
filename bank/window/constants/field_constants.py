@@ -4,6 +4,7 @@ NAME_REGEX = "[А-Яа-яA-Za-z]+"
 MAX_NAME_LENGTH = 255
 
 MIN_DATE = datetime.date(1900, 1, 1)
+DEFAULT_DATE = datetime.date(2000, 1, 1)
 
 MAX_PASSPORT_SERIES_LENGTH = 2
 PASSPORT_SERIES_MASK = "[A-Za-z]+"

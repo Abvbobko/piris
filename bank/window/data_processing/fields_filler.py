@@ -1,6 +1,36 @@
 from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QDateEdit, QComboBox, QCheckBox, QRadioButton
+from bank.window.constants.field_constants import DEFAULT_DATE
 
-# todo: сюда и очиститель полей
+
+def uncheck_edit(edit):
+    edit.setChecked(False)
+
+
+def clear_combobox(edit):
+    edit.setCurrentIndex(0)
+
+
+def clear_date(edit, default_date=DEFAULT_DATE):
+    fill_date_edit(edit, default_date)
+
+
+def clear_edit(edit):
+    edit_type = type(edit)
+    if edit_type == list:
+        for one_edit in edit:
+            clear_edit(one_edit)
+    elif edit_type == dict:
+        for one_edit in edit.values():
+            clear_edit(one_edit)
+    elif edit_type == QRadioButton or edit_type == QCheckBox:
+        uncheck_edit(edit)
+    elif edit_type == QComboBox:
+        clear_combobox(edit)
+    elif edit_type == QDateEdit:
+        clear_date(edit)
+    else:
+        edit.clear()
 
 
 def fill_edit(edit, column_name, value):
