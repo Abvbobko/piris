@@ -20,22 +20,32 @@ class DBController:
             database=database
         )
 
-    def is_passport_number_exists(self, passport_series, passport_number):
+    def is_passport_number_exists(self, passport_series, passport_number, updating_mode=False, person_id=None):
         params = [
             DBController._create_param_dict("passport_series", passport_series, True),
             DBController._create_param_dict("passport_number", passport_number, False)
         ]
         found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
-        if found_records:
+        if updating_mode:
+            for record in found_records:
+                if record[0] != person_id:
+                    return True
+        elif found_records:
             return True
         return False
 
-    def is_passport_id_exists(self, passport_id):
+    def is_passport_id_exists(self, passport_id, updating_mode=False, person_id=None):
         params = [
             DBController._create_param_dict("identification_number", passport_id, True)
         ]
         found_records = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
-        if found_records:
+
+        if updating_mode:
+            for record in found_records:
+                if record[0] != person_id:
+                    return True
+
+        elif found_records:
             return True
         return False
 
@@ -115,16 +125,12 @@ class DBController:
 
         # UPDATE table_name SET column_name1 = expr1, column_name2 = expr2 WHERE condition;
 
-        # sql_column_names = []
-        # sql_updated_values = []
         sql_setted_params = []
         for param in list_of_params:
-            # todo: записывать NULL
-            # todo: надо обязательно протестить:
-                # todo: редактирование с норм на NULL
-            value = param["field_value"]
             if param["field_value"] is not None:
                 value = DBController._quote_value(param["field_value"], param["quote_char"])
+            else:
+                value = "NULL"
             sql_setted_params.append(f"{param['field_name']}={value}")
 
         sql_settled_params = ",".join(sql_setted_params)

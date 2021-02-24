@@ -340,17 +340,19 @@ class MainWindow(QMainWindow):
 
         return None
 
-    def _validate_fields_with_db(self):
+    def _validate_fields_with_db(self, updating_mode=False):
         passport_series = self.passport_series_edit.text()
         passport_number = int(self.passport_number_edit.text())
-        if self.db.is_passport_number_exists(passport_series=passport_series, passport_number=passport_number):
+        if self.db.is_passport_number_exists(passport_series=passport_series, passport_number=passport_number,
+                                             updating_mode=updating_mode, person_id=self.updating_person_id):
             return "Паспорт с таким номером и серией уже существует."
         passport_id = self.identification_number_edit.text()
-        if self.db.is_passport_id_exists(passport_id=passport_id):
+        if self.db.is_passport_id_exists(passport_id=passport_id,
+                                         updating_mode=updating_mode, person_id=self.updating_person_id):
             return "Паспорт с таким идентификационным номером уже существует."
         return None
 
-    def _add_person(self):
+    def _add_person(self, updating_mode=False):
         sex = db_data_converter.convert_sex_to_db_form(
             self.m_radio_button.isChecked(),
             self.w_radio_button.isChecked()
@@ -364,6 +366,10 @@ class MainWindow(QMainWindow):
         monthly_income = db_data_converter.get_optional_value(self.monthly_income_edit)
         monthly_income = float(monthly_income) if monthly_income else None
         pension = int(self.pension_checkbox.isChecked())
+
+        person_id = None
+        if updating_mode:
+            person_id = self.updating_person_id
         return self.db.insert_person(
             first_name=self.name_edit.text(),
             surname=self.surname_edit.text(),
@@ -386,7 +392,9 @@ class MainWindow(QMainWindow):
             disability=self.disability_combobox.currentText(),
             citizenship=self.citizenship_combobox.currentText(),
             residence_city=self.residence_city_combobox.currentText(),
-            registration_city=self.registration_city_combobox.currentText()
+            registration_city=self.registration_city_combobox.currentText(),
+            update_mode=updating_mode,
+            person_id=person_id
         )
 
     def _add_button_click(self):
@@ -408,22 +416,21 @@ class MainWindow(QMainWindow):
     def _update_button_click(self):
         print('update')
 
-        pipeline = [
-            self._validate_fields,
-            # todo: тут что-то другое? Тут валидировать, что нет ни у кого, кроме тебя.
-            # self._validate_fields_with_db,
-            # todo: тут функция _update_person?
-            # self._add_person
-        ]
-        # todo: можно заменить add person, в нее как-то передавать person_id и is_updating?
-        # todo: можно передавать через **kwargs
-        # todo: добавить кваргс во все пайплайновские функции  (тем самым решить и проблему с дб валидейшн)
-        for pipeline_func in pipeline:
-            error = pipeline_func()
-            if error:
-                MainWindow.call_error_box(error_text=error)
-                return
-
+        error = self._validate_fields()
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        print(1)
+        error = self._validate_fields_with_db(updating_mode=True)
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        print(2)
+        error = self._add_person(updating_mode=True)
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        print(3)
         MainWindow.call_ok_box(ok_text="Клиент успешно обновлен.")
         self._clear_data_edits()
 
