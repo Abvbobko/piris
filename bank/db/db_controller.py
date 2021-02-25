@@ -63,43 +63,40 @@ class DBController:
             "quote_char": need_quote_char
         }
 
-    def insert_person(self, first_name, surname, patronymic, birth_date, sex, passport_series, passport_number,
-                      issued_by, issue_date, identification_number, birth_place, residence_address, home_phone,
-                      mobile_phone, email, pension, monthly_income, marital_status, disability, citizenship,
-                      residence_city, registration_city, update_mode=False, person_id=None):
+    def insert_person(self, update_mode=False, person_id=None, **kwargs):
 
         person_data = [
-            DBController._create_param_dict("first_name", first_name, True),
-            DBController._create_param_dict("surname", surname, True),
-            DBController._create_param_dict("patronymic", patronymic, True),
-            DBController._create_param_dict("birth_date", birth_date, True),
-            DBController._create_param_dict("sex", sex, False),
-            DBController._create_param_dict("passport_series", passport_series, True),
-            DBController._create_param_dict("passport_number", passport_number, False),
-            DBController._create_param_dict("issued_by", issued_by, True),
-            DBController._create_param_dict("issue_date", issue_date, True),
-            DBController._create_param_dict("identification_number", identification_number, True),
-            DBController._create_param_dict("birth_place", birth_place, True),
-            DBController._create_param_dict("residence_address", residence_address, True),
-            DBController._create_param_dict("home_phone", home_phone, True),
-            DBController._create_param_dict("mobile_phone", mobile_phone, True),
-            DBController._create_param_dict("email", email, True),
-            DBController._create_param_dict("pension", pension, False),
-            DBController._create_param_dict("monthly_income", monthly_income, False),
+            DBController._create_param_dict("first_name", kwargs["first_name"], True),
+            DBController._create_param_dict("surname", kwargs["surname"], True),
+            DBController._create_param_dict("patronymic", kwargs["patronymic"], True),
+            DBController._create_param_dict("birth_date", kwargs["birth_date"], True),
+            DBController._create_param_dict("sex", kwargs["sex"], False),
+            DBController._create_param_dict("passport_series", kwargs["passport_series"], True),
+            DBController._create_param_dict("passport_number", kwargs["passport_number"], False),
+            DBController._create_param_dict("issued_by", kwargs["issued_by"], True),
+            DBController._create_param_dict("issue_date", kwargs["issue_date"], True),
+            DBController._create_param_dict("identification_number", kwargs["identification_number"], True),
+            DBController._create_param_dict("birth_place", kwargs["birth_place"], True),
+            DBController._create_param_dict("residence_address", kwargs["residence_address"], True),
+            DBController._create_param_dict("home_phone", kwargs["home_phone"], True),
+            DBController._create_param_dict("mobile_phone", kwargs["mobile_phone"], True),
+            DBController._create_param_dict("email", kwargs["email"], True),
+            DBController._create_param_dict("pension", kwargs["pension"], False),
+            DBController._create_param_dict("monthly_income", kwargs["monthly_income"], False),
             DBController._create_param_dict(
-                "marital_status", self._get_id_by_name(marital_status, db_names.MARITAL_STATUS_TABLE), False
+                "marital_status", self._get_id_by_name(kwargs["marital_status"], db_names.MARITAL_STATUS_TABLE), False
             ),
             DBController._create_param_dict(
-                "disability", self._get_id_by_name(disability, db_names.DISABILITY_TABLE), False
+                "disability", self._get_id_by_name(kwargs["disability"], db_names.DISABILITY_TABLE), False
             ),
             DBController._create_param_dict(
-                "citizenship", self._get_id_by_name(citizenship, db_names.CITIZENSHIP_TABLE), False
+                "citizenship", self._get_id_by_name(kwargs["citizenship"], db_names.CITIZENSHIP_TABLE), False
             ),
             DBController._create_param_dict(
-                "residence_city", self._get_id_by_name(residence_city, db_names.CITY_TABLE), False
+                "residence_city", self._get_id_by_name(kwargs["residence_city"], db_names.CITY_TABLE), False
             ),
             DBController._create_param_dict(
-                "registration_city", self._get_id_by_name(registration_city, db_names.CITY_TABLE), False
+                "registration_city", self._get_id_by_name(kwargs["registration_city"], db_names.CITY_TABLE), False
             )
         ]
 
@@ -143,7 +140,6 @@ class DBController:
             return str(error)
 
         return None
-
 
     def _write_to_db(self, table_name, list_of_params):
         """Insert new record into db table
