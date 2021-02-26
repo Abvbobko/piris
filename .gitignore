@@ -9,3 +9,6 @@ creds.py
 
 # db files
 *.bak
+
+# tasks files
+tasks/
