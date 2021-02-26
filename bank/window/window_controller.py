@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
             sex=sex,
             field_name=self.identification_number_edit.field_name,
             length=self.identification_number_edit.maxLength(),
-            mask=self.identification_number_regex
+            mask=self.identification_number_edit.mask_regex
         )
         if error:
             return error

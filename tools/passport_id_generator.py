@@ -4,7 +4,7 @@ import datetime
 import calendar
 
 
-def generate(sex=0, start_year=1901, end_year=datetime.date.today().year):
+def generate(sex=0, start_year=1950, end_year=datetime.date.today().year):
     # man - 0
     # woman - 1
 
