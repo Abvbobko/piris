@@ -57,14 +57,25 @@ class MainWindow(QMainWindow):
         # set deposit part
         fields_setter.set_deposit_fields(self)
         self.deposit_combobox.currentTextChanged.connect(self._choose_deposit)
+        self.currency_combobox.currentTextChanged.connect(self._choose_currency)
+
+    def _choose_currency(self, value):
+        if value:
+            MainWindow._enable_field(self.term_label, self.term_combobox, True)
+            terms = self.db.get_terms(self.deposit_combobox.currentText(), self.currency_combobox.currentText())
+            fields_setter.set_combobox(self.term_combobox, terms, "Срок договора")
+        else:
+            MainWindow._enable_field(self.term_label, self.term_combobox, False)
 
     def _choose_deposit(self, value):
         if value:
             MainWindow._enable_field(self.currency_label, self.currency_combobox, True)
             fields_setter.set_is_deposit_revocable(self.is_revocable_edit, self.db.is_deposit_revocable(value))
+            fields_setter.set_combobox(self.currency_combobox, self.db.get_currencies(), "Валюта")
         else:
             edit_manipulator.clear_edit(self.is_revocable_edit)
             MainWindow._enable_field(self.currency_label, self.currency_combobox, False)
+            MainWindow._enable_field(self.term_label, self.term_combobox, False)
 
     @staticmethod
     def _enable_field(label, edit, enable):

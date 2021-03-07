@@ -6,4 +6,7 @@ MARITAL_STATUS_TABLE = "maritalstatus"
 DISABILITY_TABLE = "disability"
 
 # deposit info
-DEPOST_TABLE = "deposit"
+DEPOSIT_TABLE = "deposit"
+CURRENCY_TABLE = "currency"
+DEPOSIT_PROGRAM_TABLE = "deposit_program"
+

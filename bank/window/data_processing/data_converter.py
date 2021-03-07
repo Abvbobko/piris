@@ -17,3 +17,6 @@ def add_none_state_to_list(values):
         return [None] + values
     return values
 
+
+def convert_list_to_str_list(l):
+    return [str(item) for item in l]

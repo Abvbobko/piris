@@ -141,6 +141,7 @@ def set_string_edit(edit, field_name=None,
 
 
 def set_combobox(combobox, db_values, field_name):
+    db_values = data_converter.convert_list_to_str_list(db_values)
     db_values_names = data_converter.add_none_state_to_list(db_values)
     combobox.db_values = db_values
     combobox.clear()

@@ -234,12 +234,8 @@ class DBController:
         self.db.close()
 
     def is_deposit_revocable(self, deposit_name):
-        params = [{
-            "field_name": "name",
-            "field_value": deposit_name,
-            "quote_char": True
-        }]
-        deposit = self._select_records_by_parameters(db_names.DEPOST_TABLE, params)
+        params = [DBController._create_param_dict("name", deposit_name, True)]
+        deposit = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
         # 0 - возвратный
         # 1 - невозвратный
         is_revocable = True if deposit[0][2] == 1 else False
@@ -300,7 +296,32 @@ class DBController:
         return self._get_name_list(db_names.DISABILITY_TABLE)
 
     def get_deposits(self):
-        return self._get_name_list(db_names.DEPOST_TABLE)
+        return self._get_name_list(db_names.DEPOSIT_TABLE)
+
+    def get_currencies(self):
+        return self._get_name_list(db_names.CURRENCY_TABLE)
+
+    @staticmethod
+    def _get_field_by_name(records, header, field_name):
+        column = []
+        if records and len(header) != len(records[0]):
+            raise Exception("Error. Sizes of header and records must be the same.")
+        for i in range(len(header)):
+            if header[i] == field_name:
+                column = [record[i] for record in records]
+                break
+        return column
+
+    def get_terms(self, deposit_name, currency_name):
+        deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
+        currency_id = self._get_id_by_name(currency_name, db_names.CURRENCY_TABLE)
+        params = [
+            DBController._create_param_dict("deposit_id", deposit_id, False),
+            DBController._create_param_dict("currency_id", currency_id, False)
+        ]
+        programs = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        header = self.cursor.column_names
+        return DBController._get_field_by_name(programs, header, "term")
 
     def _convert_person_record(self, record, header):
         converted_record = []
