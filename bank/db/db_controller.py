@@ -311,6 +311,12 @@ class DBController:
     def get_currencies(self):
         return self._get_name_list(db_names.CURRENCY_TABLE)
 
+    def get_currency_id_by_name(self, currency):
+        return self._get_id_by_name(currency, db_names.CURRENCY_TABLE)
+
+    def get_currency_name_by_id(self, currency_id):
+        return self._get_name_by_id(currency_id, db_names.CURRENCY_TABLE)
+
     @staticmethod
     def _get_field_by_name(records, header, field_name):
         column = []
