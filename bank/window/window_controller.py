@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
         deposit_info = self._get_deposit_info()
         min_amount, max_amount = deposit_info["min_amount"], deposit_info["max_amount"]
         currency = self.currency_combobox.currentText()
-        if not (min_amount < float(self.amount_edit.text()) < max_amount):
+        if not (min_amount <= float(self.amount_edit.text()) <= max_amount):
             return f"Сумма должна быть от {min_amount} до {max_amount} {currency}."
 
         return None
@@ -137,6 +137,8 @@ class MainWindow(QMainWindow):
             edit_manipulator.fill_number_edit(self.rate_edit, deposit_info["rate"])
             edit_manipulator.fill_date_edit(self.deposit_program_period_from_edit, deposit_info["start_date"])
             edit_manipulator.fill_date_edit(self.deposit_program_period_to_edit, deposit_info["end_date"])
+            edit_manipulator.fill_number_edit(self.min_amount_edit, deposit_info["min_amount"])
+            edit_manipulator.fill_number_edit(self.max_amount_edit, deposit_info["max_amount"])
             # +3 because of .\d\d in float
             self.amount_edit.setMaxLength(len(str(deposit_info["max_amount"])) + 3)
         else:
@@ -146,6 +148,8 @@ class MainWindow(QMainWindow):
         edit_manipulator.clear_edit(self.deposit_program_period_from_edit)
         edit_manipulator.clear_edit(self.deposit_program_period_to_edit)
         edit_manipulator.clear_edit(self.rate_edit)
+        edit_manipulator.clear_edit(self.min_amount_edit)
+        edit_manipulator.clear_edit(self.max_amount_edit)
 
     def _choose_currency(self, value):
         if value:
