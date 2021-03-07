@@ -5,6 +5,27 @@ import bank.window.data_processing.data_converter as data_converter
 import datetime
 
 
+def set_deposit_fields(self):
+    deposits = self.db.get_deposits()
+    set_combobox(self.deposit_combobox, deposits, "Депозит")
+    set_string_edit(
+        self.contract_number_edit, field_name="Номер договора", mask_regex=field_const.CONTRACT_NUMBER_MASK,
+        max_length=field_const.CONTRACT_NUMBER_MAX_LENGTH, can_be_empty=False
+    )
+
+    set_string_edit(
+        self.id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
+        max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
+    )
+
+
+def set_is_deposit_revocable(edit, value):
+    if value:
+        set_text_to_edit(edit, "да")
+    else:
+        set_text_to_edit(edit, "нет")
+
+
 def set_all_fields(self):
     """Set all parameters to edits"""
     cities = self.db.get_cities()

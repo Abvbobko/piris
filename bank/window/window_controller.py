@@ -54,6 +54,18 @@ class MainWindow(QMainWindow):
 
         self.tabs.currentChanged.connect(self._change_tab)
 
+        # set deposit part
+        fields_setter.set_deposit_fields(self)
+        self.deposit_combobox.currentTextChanged.connect(self._choose_deposit)
+
+    def _choose_deposit(self, value):
+        if value:
+            MainWindow._enable_field(self.currency_label, self.currency_combobox, True)
+            fields_setter.set_is_deposit_revocable(self.is_revocable_edit, self.db.is_deposit_revocable(value))
+        else:
+            edit_manipulator.clear_edit(self.is_revocable_edit)
+            MainWindow._enable_field(self.currency_label, self.currency_combobox, False)
+
     @staticmethod
     def _enable_field(label, edit, enable):
         label.setEnabled(enable)

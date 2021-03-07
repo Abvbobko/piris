@@ -233,6 +233,18 @@ class DBController:
     def close_connection(self):
         self.db.close()
 
+    def is_deposit_revocable(self, deposit_name):
+        params = [{
+            "field_name": "name",
+            "field_value": deposit_name,
+            "quote_char": True
+        }]
+        deposit = self._select_records_by_parameters(db_names.DEPOST_TABLE, params)
+        # 0 - возвратный
+        # 1 - невозвратный
+        is_revocable = True if deposit[0][2] == 1 else False
+        return is_revocable
+
     def get_tables(self):
         self.cursor.execute("SHOW TABLES")
         tables = [table for (table, ) in self.cursor.fetchall()]
@@ -286,6 +298,9 @@ class DBController:
 
     def get_disabilities(self):
         return self._get_name_list(db_names.DISABILITY_TABLE)
+
+    def get_deposits(self):
+        return self._get_name_list(db_names.DEPOST_TABLE)
 
     def _convert_person_record(self, record, header):
         converted_record = []
