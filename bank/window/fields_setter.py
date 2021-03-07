@@ -14,7 +14,7 @@ def set_deposit_fields(self):
     )
 
     set_string_edit(
-        self.id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
+        self.client_id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
         max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
     )
 

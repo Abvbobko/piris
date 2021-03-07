@@ -34,6 +34,16 @@ class DBController:
             return True
         return False
 
+    def is_deposit_number_exists(self, deposit_number):
+        params = [
+            DBController._create_param_dict("contract_number", deposit_number, True)
+        ]
+        found_records = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
+
+        if found_records:
+            return True
+        return False
+
     def is_passport_id_exists(self, passport_id, updating_mode=False, person_id=None):
         params = [
             DBController._create_param_dict("identification_number", passport_id, True)

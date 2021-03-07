@@ -9,4 +9,5 @@ DISABILITY_TABLE = "disability"
 DEPOSIT_TABLE = "deposit"
 CURRENCY_TABLE = "currency"
 DEPOSIT_PROGRAM_TABLE = "deposit_program"
+CLIENT_DEPOSIT_TABLE = "client_deposit"
 

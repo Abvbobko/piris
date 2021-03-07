@@ -64,13 +64,76 @@ class MainWindow(QMainWindow):
             max_length=field_const.MAX_AMOUNT_LENGTH, can_be_empty=False
         )
 
+        self.create_deposit_button.clicked.connect(self._create_deposit_button_click)
+
+    def _validate_deposit_fields(self):
+        string_data_edits = [
+            self.client_id_edit,
+            self.contract_number_edit,
+            self.amount_edit
+        ]
+        error = prevalidator.list_validation_call(string_data_edits, prevalidator.validate_string_edit)
+        if error:
+            return error
+
+        comboboxes = [
+            self.deposit_combobox,
+            self.currency_combobox,
+            self.term_combobox
+        ]
+        error = prevalidator.list_validation_call(comboboxes, prevalidator.validate_combobox)
+        if error:
+            return error
+
+        return None
+
+    def _validate_deposit_fields_with_db(self):
+        person_id = int(self.client_id_edit.text())
+        person_record = self.db.get_person(person_id)
+        record = person_record["records"]
+        if not record:
+            error = "Клиент не найден."
+            MainWindow.call_error_box(error_text=error)
+            self._clear_data_edits()
+            return
+
+        if self.db.is_deposit_number_exists(self.contract_number_edit):
+            return "Договор с таким номером уже существует."
+
+        deposit_info = self._get_deposit_info()
+        min_amount, max_amount = deposit_info["min_amount"], deposit_info["max_amount"]
+        currency = self.currency_combobox.currentText()
+        if not (min_amount < float(self.amount_edit.text()) < max_amount):
+            return f"Сумма должна быть от {min_amount} до {max_amount} {currency}."
+
+        return None
+
+    def _create_deposit_button_click(self):
+        print('create deposit')
+        pipeline = [
+            self._validate_deposit_fields,
+            self._validate_deposit_fields_with_db
+            # create_deposit
+        ]
+        for pipeline_func in pipeline:
+            error = pipeline_func()
+            if error:
+                MainWindow.call_error_box(error_text=error)
+                return
+
+        MainWindow.call_ok_box(ok_text="Депозит успешно оформлен.")
+        # todo: self._clear_data_edits() (---_clear_deposit_data_edits---)
+
+    def _get_deposit_info(self, deposit=None, currency=None, term=None):
+        return self.db.get_deposit_info(
+            deposit if deposit else self.deposit_combobox.currentText(),
+            currency if currency else self.currency_combobox.currentText(),
+            term if term else self.term_combobox.currentText()
+        )
+
     def _choose_term(self, value):
         if value:
-            deposit_info = self.db.get_deposit_info(
-                self.deposit_combobox.currentText(),
-                self.currency_combobox.currentText(),
-                int(value)
-            )
+            deposit_info = self._get_deposit_info(term=value)
             edit_manipulator.fill_number_edit(self.rate_edit, deposit_info["rate"])
             edit_manipulator.fill_date_edit(self.deposit_program_period_from_edit, deposit_info["start_date"])
             edit_manipulator.fill_date_edit(self.deposit_program_period_to_edit, deposit_info["end_date"])
