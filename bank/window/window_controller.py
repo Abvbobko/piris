@@ -58,6 +58,31 @@ class MainWindow(QMainWindow):
         fields_setter.set_deposit_fields(self)
         self.deposit_combobox.currentTextChanged.connect(self._choose_deposit)
         self.currency_combobox.currentTextChanged.connect(self._choose_currency)
+        self.term_combobox.currentTextChanged.connect(self._choose_term)
+        fields_setter.set_string_edit(
+            self.amount_edit, field_name="Сумма", mask_regex=field_const.AMOUNT_REGEX,
+            max_length=field_const.MAX_AMOUNT_LENGTH, can_be_empty=False
+        )
+
+    def _choose_term(self, value):
+        if value:
+            deposit_info = self.db.get_deposit_info(
+                self.deposit_combobox.currentText(),
+                self.currency_combobox.currentText(),
+                int(value)
+            )
+            edit_manipulator.fill_number_edit(self.rate_edit, deposit_info["rate"])
+            edit_manipulator.fill_date_edit(self.deposit_program_period_from_edit, deposit_info["start_date"])
+            edit_manipulator.fill_date_edit(self.deposit_program_period_to_edit, deposit_info["end_date"])
+            # +3 because of .\d\d in float
+            self.amount_edit.setMaxLength(len(str(deposit_info["max_amount"])) + 3)
+        else:
+            self._clear_deposit_info_edits()
+
+    def _clear_deposit_info_edits(self):
+        edit_manipulator.clear_edit(self.deposit_program_period_from_edit)
+        edit_manipulator.clear_edit(self.deposit_program_period_to_edit)
+        edit_manipulator.clear_edit(self.rate_edit)
 
     def _choose_currency(self, value):
         if value:
@@ -66,6 +91,8 @@ class MainWindow(QMainWindow):
             fields_setter.set_combobox(self.term_combobox, terms, "Срок договора")
         else:
             MainWindow._enable_field(self.term_label, self.term_combobox, False)
+            edit_manipulator.clear_edit(self.term_combobox)
+            self._clear_deposit_info_edits()
 
     def _choose_deposit(self, value):
         if value:
@@ -76,6 +103,8 @@ class MainWindow(QMainWindow):
             edit_manipulator.clear_edit(self.is_revocable_edit)
             MainWindow._enable_field(self.currency_label, self.currency_combobox, False)
             MainWindow._enable_field(self.term_label, self.term_combobox, False)
+            edit_manipulator.clear_edit(self.term_combobox)
+            self._clear_deposit_info_edits()
 
     @staticmethod
     def _enable_field(label, edit, enable):

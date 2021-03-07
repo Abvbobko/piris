@@ -785,6 +785,9 @@
         <height>20</height>
        </rect>
       </property>
+      <property name="maxLength">
+       <number>12</number>
+      </property>
      </widget>
      <widget class="QLabel" name="amount_label">
       <property name="geometry">

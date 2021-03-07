@@ -323,6 +323,34 @@ class DBController:
         header = self.cursor.column_names
         return DBController._get_field_by_name(programs, header, "term")
 
+    @staticmethod
+    def _get_first_list_value(some_list):
+        return None if not some_list else some_list[0]
+
+    @staticmethod
+    def _get_field_value(records, header, field_name):
+        return DBController._get_first_list_value(DBController._get_field_by_name(records, header, field_name))
+
+    def get_deposit_info(self, deposit_name, currency_name, term):
+        deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
+        currency_id = self._get_id_by_name(currency_name, db_names.CURRENCY_TABLE)
+        params = [
+            DBController._create_param_dict("deposit_id", deposit_id, False),
+            DBController._create_param_dict("currency_id", currency_id, False),
+            DBController._create_param_dict("term", term, False)
+        ]
+        program = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        header = self.cursor.column_names
+
+        return {
+            "min_amount": DBController._get_field_value(program, header, "min_amount"),
+            "max_amount": DBController._get_field_value(program, header, "max_amount"),
+            "rate": DBController._get_field_value(program, header, "rate"),
+            "start_date": DBController._get_field_value(program, header, "start_date"),
+            "end_date": DBController._get_field_value(program, header, "end_date")
+        }
+
+
     def _convert_person_record(self, record, header):
         converted_record = []
         for i in range(len(record)):
