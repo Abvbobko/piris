@@ -99,8 +99,6 @@ class ContractController:
         credit_account_id = self.db.get_last_inserted_id()
         # todo: method to save|update deposit in db controller
 
-
-
     def create_deposit(self, client_id, contract_number, currency_id,
                        amount, term, deposit_program_id, rate, start_date):
         deposit = accounts.Deposit(

@@ -111,11 +111,12 @@ class DBController:
         ]
 
         if update_mode and person_id is not None:
-            return self._update_record(db_names.PERSON_TABLE, person_data, "idPerson", person_id)
+            list_of_id_params = [DBController._create_param_dict("idPerson", person_id, False)]
+            return self._update_record(db_names.PERSON_TABLE, person_data, list_of_id_params)
 
         return self._write_to_db(db_names.PERSON_TABLE, person_data)
 
-    def _update_record(self, table_name, list_of_params, id_column_name, record_id):
+    def _update_record(self, table_name, list_of_params, list_of_id_params):
         """Update record in the db table
         :param table_name: name of the db table
         :param list_of_params: list with the following pattern:
@@ -141,8 +142,8 @@ class DBController:
             sql_setted_params.append(f"{param['field_name']}={value}")
 
         sql_settled_params = ",".join(sql_setted_params)
-
-        sql_update_request = f"UPDATE {table_name} SET {sql_settled_params} WHERE {id_column_name}={record_id}"
+        sql_where_condition = DBController._generate_where_condition(list_of_id_params)
+        sql_update_request = f"UPDATE {table_name} SET {sql_settled_params} WHERE {sql_where_condition}"
         try:
             self.cursor.execute(sql_update_request)
             self.db.commit()
@@ -186,6 +187,18 @@ class DBController:
 
         return None
 
+    @staticmethod
+    def _generate_where_condition(list_of_params):
+        sql_search_params = []
+        for param in list_of_params:
+            # add quote_char if needed and convert value to string
+            value = DBController._quote_value(param["field_value"], param["quote_char"])
+            # create string params like field=value
+            sql_search_params.append(f"{param['field_name']}={value}")
+
+        sql_where_params = " AND ".join(sql_search_params)
+        return sql_where_params
+
     def _select_records_by_parameters(self, table_name, list_of_params):
         """Find records with list_of_param parameters and return it
         :param table_name: name of the db table
@@ -209,14 +222,7 @@ class DBController:
         :return: list of found values
         """
 
-        sql_search_params = []
-        for param in list_of_params:
-            # add quote_char if needed and convert value to string
-            value = DBController._quote_value(param["field_value"], param["quote_char"])
-            # create string params like field=value
-            sql_search_params.append(f"{param['field_name']}={value}")
-
-        sql_where_params = " AND ".join(sql_search_params)
+        sql_where_params = DBController._generate_where_condition(list_of_params)
 
         sql_request = f"SELECT * FROM {table_name}"
         if sql_where_params:
@@ -457,7 +463,46 @@ class DBController:
             DBController._create_param_dict("number", kwargs["account_number"], True)
         ]
         if update_mode and account_id is not None:
-            return self._update_record(db_names.CLIENT_ACCOUNT_TABLE, account_data, "id", account_id)
+            id_params = [DBController._create_param_dict("id", account_id, False)]
+            return self._update_record(db_names.CLIENT_ACCOUNT_TABLE, account_data, id_params)
+
+        return self._write_to_db(db_names.CLIENT_ACCOUNT_TABLE, account_data)
+
+    @staticmethod
+    def create_deposit_accounts_id_dict(current_id, credit_id):
+        return {
+            "current": current_id,
+            "credit": credit_id
+        }
+
+    def insert_deposit(self, update_mode=False, deposit_id=None, accounts_ids=None, **kwargs):
+        """
+
+        :param update_mode:
+        :param deposit_id:
+        :param accounts_ids: {
+            "current": current_account_id,
+            "credit": credit_account_id
+        }
+        :param kwargs:
+        :return:
+        """
+        account_data = [
+            DBController._create_param_dict("is_bdfa", kwargs["is_bdfa"], False),
+            DBController._create_param_dict("is_cash_register", kwargs["is_cash_register"], False),
+            DBController._create_param_dict("debit", kwargs["debit"], False),
+            DBController._create_param_dict("credit", kwargs["credit"], False),
+            DBController._create_param_dict("type", kwargs["account_type"], False),
+            DBController._create_param_dict("currency_id", kwargs["currency_id"], False),
+            DBController._create_param_dict("chart_of_accounts", kwargs["chart_of_accounts_number"], False),
+            DBController._create_param_dict("number", kwargs["account_number"], True)
+        ]
+        if update_mode and deposit_id is not None:
+            id_params = [
+                DBController._create_param_dict("current_account", accounts_ids["current"], False),
+                DBController._create_param_dict("credit_account", accounts_ids["credit"], False),
+            ]
+            return self._update_record(db_names.CLIENT_ACCOUNT_TABLE, account_data, id_params)
 
         return self._write_to_db(db_names.CLIENT_ACCOUNT_TABLE, account_data)
 
