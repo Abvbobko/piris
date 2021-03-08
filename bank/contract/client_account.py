@@ -1,19 +1,22 @@
+from enum import Enum
+
+
+class AccountType(Enum):
+    ACTIVE = 0
+    PASSIVE = 1
+    ACTIVE_PASSIVE = 2
+
 
 class ClientAccount:
-    def __init__(self, db, account_type, chart_of_accounts, currency_id, deposit_number,
-                 is_bdfa=False, is_cash_register=False):
-        self.db = db
-        self.is_bdfa = is_bdfa
-        self.is_cash_register = is_cash_register
-        self.debit = 0
-        self.credit = 0
-        # 0 - active
-        # 1 - passive
-        # 2 - active-passive
+    def __init__(self, account_type, chart_of_accounts, currency_id, start_debit=0, start_credit=0,
+                 account_number=None, deposit_number=None):
+        self.debit = start_debit
+        self.credit = start_credit
         self.type = account_type
         self.currency_id = currency_id
         self.chart_of_accounts = chart_of_accounts
-        self.number = ClientAccount.generate_number(chart_of_accounts, deposit_number)
+        self.number = account_number if account_number \
+            else ClientAccount.generate_number(chart_of_accounts, deposit_number)
 
     @staticmethod
     def generate_number(chart_of_accounts_number, deposit_number):
@@ -26,23 +29,53 @@ class ClientAccount:
 
         return account_number
 
-    # todo: функция по увеличению дебита/кредита в зависимости от type
-    # todo: геттеры ко всем функциям
-    # todo: начислить проценты
+    def add_amount(self, amount):
+        if self.type == AccountType.ACTIVE:
+            self.debit += amount
+        elif self.type == AccountType.PASSIVE:
+            self.credit += amount
+        print(f'Зачислено на {self.number}')
+
+    def sub_amount(self, amount):
+        if self.type == AccountType.ACTIVE:
+            self.credit += amount
+        elif self.type == AccountType.PASSIVE:
+            self.debit += amount
+        print(f'Вычтено с {self.number}')
+
+    def get_currency_id(self):
+        return self.currency_id
+
     # todo: проработать спец методы для кассы и СФРБ
+    # todo: проверять, чтобы номер депозита не было в бд
 
 
 class Deposit:
-    def __init__(self, client_id, deposit_id, contract_number):
+    def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date):
         self.client_id = client_id
         self.contract_number = contract_number
         self.deposit_id = deposit_id
-        # current_account_id
-        # credit_account_id
+        self.current_account_id = Deposit.create_account(
+            AccountType.PASSIVE, 3014, currency_id, contract_number
+        )
+        self.credit_account_id = Deposit.create_account(
+            AccountType.PASSIVE, 2400, currency_id, contract_number
+        )
+        self.currency_id = currency_id
+        self.rate = rate
+        self.term = term
+        self.start_date = start_date
+        # todo: generate end_date using term
 
-    def create_account(self):
-        pass
+    @staticmethod
+    def create_account(account_type, chart_of_accounts_code, currency_id, deposit_number):
+        return ClientAccount(account_type, chart_of_accounts_code, currency_id, deposit_number=deposit_number)
 
-    # todo: метод по генерации друх счетов
-    # todo: начислить проценты
-    # todo: взаимоействие с бд
+    def get_currency_id(self):
+        return self.currency_id
+
+    # todo: get accounts info?
+        # todo: current
+        # todo: credit
+        # todo: controller gets info and saves to db
+

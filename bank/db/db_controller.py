@@ -366,6 +366,16 @@ class DBController:
             "end_date": DBController._get_field_value(program, header, "end_date")
         }
 
+    def get_bdfas(self):
+        params = [DBController._create_param_dict("is_bdfa", 1, False)]
+        bdfas = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        header = self.cursor.column_names
+
+        return {
+            "columns": header,
+            "records": bdfas
+        }
+
 
     def _convert_person_record(self, record, header):
         converted_record = []
