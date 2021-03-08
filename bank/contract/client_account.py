@@ -1,4 +1,6 @@
 from enum import Enum
+import datetime
+import dateutil.relativedelta as relativedelta
 
 
 class AccountType(Enum):
@@ -46,10 +48,42 @@ class ClientAccount:
     def get_currency_id(self):
         return self.currency_id
 
+    def get_debit(self):
+        return self.debit
+
+    def get_credit(self):
+        return self.credit
+
+    def get_saldo(self):
+        if self.type == AccountType.ACTIVE:
+            return self.debit - self.credit
+        elif self.type == AccountType.PASSIVE:
+            return self.credit - self.debit
+
+    def get_type(self):
+        return self.type.value
+
+    def get_chart_of_accounts_number(self):
+        return self.chart_of_accounts
+
+    def get_account_number(self):
+        return self.number
+
 
 class Deposit:
     def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date,
                  current_account=None, credit_account=None):
+        """Класс депозита
+        :param client_id: id клиента (надо для таблицы)
+        :param deposit_id: id тарифа (со своим планом)
+        :param contract_number: номер договора (вводится в ui)
+        :param currency_id: id валюты
+        :param rate: ставка
+        :param term: срок (в месяцах)
+        :param start_date: дата заключения договора (с каких пор начинает капать вклад)
+        :param current_account: текущий счет (если есть)
+        :param credit_account: процентный счет (если есть)
+        """
         self.client_id = client_id
         self.contract_number = contract_number
         self.deposit_id = deposit_id
@@ -63,7 +97,11 @@ class Deposit:
         self.rate = rate
         self.term = term
         self.start_date = start_date
-        # todo: generate end_date using term
+        self.end_date = Deposit.calculate_end_date(start_date, term)
+
+    @staticmethod
+    def calculate_end_date(start_date, term):
+        return start_date + relativedelta.relativedelta(month=term)
 
     @staticmethod
     def create_account(account_type, chart_of_accounts_code, currency_id, deposit_number):
@@ -71,6 +109,12 @@ class Deposit:
 
     def get_currency_id(self):
         return self.currency_id
+
+    def get_current_account(self):
+        return self.current_account
+
+    def get_credit_account(self):
+        return self.credit_account
 
     # todo: get accounts info?
         # todo: current

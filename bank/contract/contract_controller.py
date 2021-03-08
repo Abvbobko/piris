@@ -70,17 +70,54 @@ class ContractController:
         account_a.sub_amount(amount)
         account_b.add_amount(amount)
 
-    def create_deposit(self, contract_number, amount, deposit_program_id, start_date):
+    @staticmethod
+    def _convert_account_to_db_form(account: accounts.ClientAccount, is_bdfa=False, is_cash_register=False):
+        return {
+            "is_bdfa": is_bdfa,
+            "is_cash_register": is_cash_register,
+            "debit": account.get_debit(),
+            "credit": account.get_credit(),
+            "type": account.get_type(),
+            "currency_id": account.get_currency_id(),
+            "chart_of_accounts": account.get_chart_of_accounts_number(),
+            "account_number": account.get_account_number()
+        }
 
-        # todo: сумма депозита
-        # todo: создавать класс депозита
+    def save_deposit_to_db(self, deposit):
+        current_account = deposit.get_current_account()
+        credit_account = deposit.get_credit_account()
+        current_account_dict = ContractController._convert_account_to_db_form(current_account)
+        credit_account_dict = ContractController._convert_account_to_db_form(credit_account)
+        error = self.db.insert_account(**current_account_dict)
+        if error:
+            return error
+        current_account_id = self.db.get_last_inserted_id()
+
+        error = self.db.insert_account(**credit_account_dict)
+        if error:
+            return error
+        credit_account_id = self.db.get_last_inserted_id()
+        # todo: method to save|update deposit in db controller
+
+
+
+    def create_deposit(self, client_id, contract_number, currency_id,
+                       amount, term, deposit_program_id, rate, start_date):
+        deposit = accounts.Deposit(
+            client_id=client_id,
+            deposit_id=deposit_program_id,
+            contract_number=contract_number,
+            currency_id=currency_id,
+            rate=rate,
+            term=term,
+            start_date=start_date
+        )
+
         # todo: сделать метод по сохранению депозита
             # todo: метод по созранению счета
         pass
 
     # todo: создать депозит клиенту
-    # todo: сохранить инфу о счете в бд
-
     # todo: зачислить проценты
     # todo: забрать вклад
     # todo: save_account_to_db

@@ -111,11 +111,11 @@ class DBController:
         ]
 
         if update_mode and person_id is not None:
-            return self._update_record(db_names.PERSON_TABLE, person_data, person_id)
+            return self._update_record(db_names.PERSON_TABLE, person_data, "idPerson", person_id)
 
         return self._write_to_db(db_names.PERSON_TABLE, person_data)
 
-    def _update_record(self, table_name, list_of_params, person_id):
+    def _update_record(self, table_name, list_of_params, id_column_name, record_id):
         """Update record in the db table
         :param table_name: name of the db table
         :param list_of_params: list with the following pattern:
@@ -142,7 +142,7 @@ class DBController:
 
         sql_settled_params = ",".join(sql_setted_params)
 
-        sql_update_request = f"UPDATE {table_name} SET {sql_settled_params} WHERE idPerson={person_id}"
+        sql_update_request = f"UPDATE {table_name} SET {sql_settled_params} WHERE {id_column_name}={record_id}"
         try:
             self.cursor.execute(sql_update_request)
             self.db.commit()
@@ -442,12 +442,27 @@ class DBController:
         return curr_date[0][1]
 
     def update_current_date(self, new_date):
-        sql_update_request = f"UPDATE {db_names.CURRENT_DATE_TABLE} SET curr_date={new_date} WHERE id=0"
-        try:
-            self.cursor.execute(sql_update_request)
-            self.db.commit()
-        except mysql.Error as error:
-            return str(error)
+        params = [DBController._create_param_dict("curr_date", new_date, False)]
+        return self._update_record(db_names.CURRENT_DATE_TABLE, params, "id", 0)
+
+    def insert_account(self, update_mode=False, account_id=None, **kwargs):
+        account_data = [
+            DBController._create_param_dict("is_bdfa", kwargs["is_bdfa"], False),
+            DBController._create_param_dict("is_cash_register", kwargs["is_cash_register"], False),
+            DBController._create_param_dict("debit", kwargs["debit"], False),
+            DBController._create_param_dict("credit", kwargs["credit"], False),
+            DBController._create_param_dict("type", kwargs["account_type"], False),
+            DBController._create_param_dict("currency_id", kwargs["currency_id"], False),
+            DBController._create_param_dict("chart_of_accounts", kwargs["chart_of_accounts_number"], False),
+            DBController._create_param_dict("number", kwargs["account_number"], True)
+        ]
+        if update_mode and account_id is not None:
+            return self._update_record(db_names.CLIENT_ACCOUNT_TABLE, account_data, "id", account_id)
+
+        return self._write_to_db(db_names.CLIENT_ACCOUNT_TABLE, account_data)
+
+    def get_last_inserted_id(self):
+        return self.cursor.lastrowid
 
 
 if __name__ == '__main__':
