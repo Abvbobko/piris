@@ -116,8 +116,17 @@ class Deposit:
     def get_credit_account(self):
         return self.credit_account
 
-    # todo: get accounts info?
-        # todo: current
-        # todo: credit
-        # todo: controller gets info and saves to db
+    def get_client_id(self):
+        return self.client_id
 
+    def get_start_date(self):
+        return self.start_date
+
+    def get_end_date(self):
+        return self.end_date
+
+    def get_deposit_id(self):
+        return self.deposit_id
+
+    def get_contract_number(self):
+        return self.contract_number

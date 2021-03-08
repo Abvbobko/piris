@@ -83,6 +83,18 @@ class ContractController:
             "account_number": account.get_account_number()
         }
 
+    @staticmethod
+    def _convert_deposit_to_db_form(deposit: accounts.Deposit, current_id, credit_id):
+        return {
+            "client_id": deposit.get_client_id(),
+            "current_account": current_id,
+            "credit_account": credit_id,
+            "contract_number": deposit.get_contract_number(),
+            "deposit_id": deposit.get_deposit_id(),
+            "deposit_start_date": deposit.get_start_date(),
+            "deposit_end_date": deposit.get_end_date()
+        }
+
     def save_deposit_to_db(self, deposit):
         current_account = deposit.get_current_account()
         credit_account = deposit.get_credit_account()
@@ -97,7 +109,11 @@ class ContractController:
         if error:
             return error
         credit_account_id = self.db.get_last_inserted_id()
-        # todo: method to save|update deposit in db controller
+        deposit_dict = ContractController._convert_deposit_to_db_form(deposit, current_account_id, credit_account_id)
+        error = self.db.insert_deposit(**deposit_dict)
+        if error:
+            return error
+        return None
 
     def create_deposit(self, client_id, contract_number, currency_id,
                        amount, term, deposit_program_id, rate, start_date):
@@ -111,12 +127,10 @@ class ContractController:
             start_date=start_date
         )
 
-        # todo: сделать метод по сохранению депозита
-            # todo: метод по созранению счета
-        pass
+        # todo: ЧТО_ТО ДЕЛАТЬ С AMOUNT (НАЧАЛЬНЫЕ ОПЕРАЦИИ С КАССОЙ)
+        return self.save_deposit_to_db(deposit)
 
     # todo: создать депозит клиенту
     # todo: зачислить проценты
     # todo: забрать вклад
-    # todo: save_account_to_db
 

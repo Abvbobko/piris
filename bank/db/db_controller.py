@@ -449,7 +449,8 @@ class DBController:
 
     def update_current_date(self, new_date):
         params = [DBController._create_param_dict("curr_date", new_date, False)]
-        return self._update_record(db_names.CURRENT_DATE_TABLE, params, "id", 0)
+        id_params = [DBController._create_param_dict("id", db_names.CURRENT_DATE_ID, False)]
+        return self._update_record(db_names.CURRENT_DATE_TABLE, params, id_params)
 
     def insert_account(self, update_mode=False, account_id=None, **kwargs):
         account_data = [
@@ -488,14 +489,13 @@ class DBController:
         :return:
         """
         account_data = [
-            DBController._create_param_dict("is_bdfa", kwargs["is_bdfa"], False),
-            DBController._create_param_dict("is_cash_register", kwargs["is_cash_register"], False),
-            DBController._create_param_dict("debit", kwargs["debit"], False),
-            DBController._create_param_dict("credit", kwargs["credit"], False),
-            DBController._create_param_dict("type", kwargs["account_type"], False),
-            DBController._create_param_dict("currency_id", kwargs["currency_id"], False),
-            DBController._create_param_dict("chart_of_accounts", kwargs["chart_of_accounts_number"], False),
-            DBController._create_param_dict("number", kwargs["account_number"], True)
+            DBController._create_param_dict("client", kwargs["client_id"], False),
+            DBController._create_param_dict("current_account", kwargs["current_account"], False),
+            DBController._create_param_dict("credit_account", kwargs["credit_account"], False),
+            DBController._create_param_dict("contract_number", kwargs["contract_number"], True),
+            DBController._create_param_dict("deposit_id", kwargs["deposit_id"], False),
+            DBController._create_param_dict("deposit_start_date", kwargs["deposit_start_date"], False),
+            DBController._create_param_dict("deposit_end_date", kwargs["deposit_end_date"], False)
         ]
         if update_mode and deposit_id is not None:
             id_params = [
