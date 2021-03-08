@@ -46,19 +46,17 @@ class ClientAccount:
     def get_currency_id(self):
         return self.currency_id
 
-    # todo: проработать спец методы для кассы и СФРБ
-    # todo: проверять, чтобы номер депозита не было в бд
-
 
 class Deposit:
-    def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date):
+    def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date,
+                 current_account=None, credit_account=None):
         self.client_id = client_id
         self.contract_number = contract_number
         self.deposit_id = deposit_id
-        self.current_account_id = Deposit.create_account(
+        self.current_account = current_account if current_account else Deposit.create_account(
             AccountType.PASSIVE, 3014, currency_id, contract_number
         )
-        self.credit_account_id = Deposit.create_account(
+        self.credit_account = credit_account if credit_account else Deposit.create_account(
             AccountType.PASSIVE, 2400, currency_id, contract_number
         )
         self.currency_id = currency_id

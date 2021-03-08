@@ -49,9 +49,6 @@ class ContractController:
             accounts.AccountType.ACTIVE, const.CASH_REGISTER_NUMBER, self.db.get_cash_registers
         )
 
-    def _load_all_client_account(self):
-        pass
-
     def _transform_from_db_to_class(self):
         pass
 
@@ -61,18 +58,30 @@ class ContractController:
     def _get_currency_name_by_id(self, currency_id):
         return self.db.get_currency_name_by_id(currency_id)
 
-    def add_to_cash_register(self, value, currency_id):
+    def _add_to_cash_register(self, value, currency_id):
+        self.cash_register[currency_id].add_amount(value)
+
+    def _sub_from_cash_register(self, value, currency_id):
+        self.cash_register[currency_id].sub_amount(value)
+
+    @staticmethod
+    def transfer_between_accounts(account_a: accounts.ClientAccount, account_b: accounts.ClientAccount, amount):
+        """Передать сумму от a к b"""
+        account_a.sub_amount(amount)
+        account_b.add_amount(amount)
+
+    def create_deposit(self, contract_number, amount, deposit_program_id, start_date):
+
+        # todo: сумма депозита
+        # todo: создавать класс депозита
+        # todo: сделать метод по сохранению депозита
+            # todo: метод по созранению счета
         pass
 
-    def sub_from_cash_register(self, value, currency_id):
-        pass
-
-    # todo: получить список всех счетов
-    # todo: положить на кассу
-    # todo: сохранить инфу о счете в бд
     # todo: создать депозит клиенту
-    # todo: зачислить из счета на счет
+    # todo: сохранить инфу о счете в бд
+
     # todo: зачислить проценты
-    # todo: снять с кассы
     # todo: забрать вклад
     # todo: save_account_to_db
+

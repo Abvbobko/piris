@@ -222,6 +222,7 @@ class DBController:
         if sql_where_params:
             sql_request += f" WHERE {sql_where_params}"
 
+        print(sql_request)
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
 
@@ -434,6 +435,19 @@ class DBController:
 
     def delete_person_by_id(self, person_id):
         return self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
+
+    def get_current_date(self):
+        params = [DBController._create_param_dict("id", db_names.CURRENT_DATE_ID, False)]
+        curr_date = self._select_records_by_parameters(db_names.CURRENT_DATE_TABLE, params)
+        return curr_date[0][1]
+
+    def update_current_date(self, new_date):
+        sql_update_request = f"UPDATE {db_names.CURRENT_DATE_TABLE} SET curr_date={new_date} WHERE id=0"
+        try:
+            self.cursor.execute(sql_update_request)
+            self.db.commit()
+        except mysql.Error as error:
+            return str(error)
 
 
 if __name__ == '__main__':

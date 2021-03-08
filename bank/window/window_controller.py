@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
         )
 
         self.create_deposit_button.clicked.connect(self._create_deposit_button_click)
+        self.current_date = self.db.get_current_date()
 
     def _validate_deposit_fields(self):
         string_data_edits = [
