@@ -376,6 +376,15 @@ class DBController:
             "records": bdfas
         }
 
+    def get_cash_registers(self):
+        params = [DBController._create_param_dict("is_cash_register", 1, False)]
+        bdfas = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        header = self.cursor.column_names
+
+        return {
+            "columns": header,
+            "records": bdfas
+        }
 
     def _convert_person_record(self, record, header):
         converted_record = []
