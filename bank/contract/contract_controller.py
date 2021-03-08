@@ -104,16 +104,25 @@ class ContractController:
         if error:
             return error
         current_account_id = self.db.get_last_inserted_id()
-
+        current_account.set_account_id(current_account_id)
         error = self.db.insert_account(**credit_account_dict)
         if error:
             return error
         credit_account_id = self.db.get_last_inserted_id()
+        credit_account.set_account_id(credit_account_id)
         deposit_dict = ContractController._convert_deposit_to_db_form(deposit, current_account_id, credit_account_id)
         error = self.db.insert_deposit(**deposit_dict)
         if error:
             return error
         return None
+
+    def update_account_in_db(self, account: accounts.ClientAccount, is_bdfa=False, is_cash_register=False):
+        account_id = account.get_account_id()
+        if account_id:
+            account_params = ContractController._convert_account_to_db_form(account, is_bdfa, is_cash_register)
+            self.db.insert_account(update_mode=True, account_id=account.get_account_id(), **account_params)
+        else:
+            print("This account doesn't have account_id")
 
     def create_deposit(self, client_id, contract_number, currency_id,
                        amount, term, deposit_program_id, rate, start_date):
@@ -126,11 +135,18 @@ class ContractController:
             term=term,
             start_date=start_date
         )
+        error = self.save_deposit_to_db(deposit)
+        if error:
+            return error
 
-        # todo: ЧТО_ТО ДЕЛАТЬ С AMOUNT (НАЧАЛЬНЫЕ ОПЕРАЦИИ С КАССОЙ)
-        return self.save_deposit_to_db(deposit)
+        self._add_to_cash_register(amount, currency_id)
+        current_account = deposit.get_current_account()
+        self.transfer_between_accounts(self.cash_register[currency_id], current_account, amount)
+        self.transfer_between_accounts(current_account, self.bdfa[currency_id], amount)
+        self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
+        self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
+        self.update_account_in_db(current_account)
 
-    # todo: создать депозит клиенту
     # todo: зачислить проценты
     # todo: забрать вклад
 

@@ -366,6 +366,7 @@ class DBController:
         header = self.cursor.column_names
 
         return {
+            "id": DBController._get_field_value(program, header, "id"),
             "min_amount": DBController._get_field_value(program, header, "min_amount"),
             "max_amount": DBController._get_field_value(program, header, "max_amount"),
             "rate": DBController._get_field_value(program, header, "rate"),

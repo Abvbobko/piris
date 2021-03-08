@@ -11,7 +11,7 @@ class AccountType(Enum):
 
 class ClientAccount:
     def __init__(self, account_type, chart_of_accounts, currency_id, start_debit=0, start_credit=0,
-                 account_number=None, deposit_number=None):
+                 account_number=None, deposit_number=None, account_id=None):
         self.debit = start_debit
         self.credit = start_credit
         self.type = account_type
@@ -19,6 +19,8 @@ class ClientAccount:
         self.chart_of_accounts = chart_of_accounts
         self.number = account_number if account_number \
             else ClientAccount.generate_number(chart_of_accounts, deposit_number)
+
+        self.account_id = account_id
 
     @staticmethod
     def generate_number(chart_of_accounts_number, deposit_number):
@@ -68,6 +70,12 @@ class ClientAccount:
 
     def get_account_number(self):
         return self.number
+
+    def get_account_id(self):
+        return self.account_id
+
+    def set_account_id(self, value):
+        self.account_id = value
 
 
 class Deposit:

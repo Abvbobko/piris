@@ -10,6 +10,8 @@ import bank.window.fields_setter as fields_setter
 import bank.window.data_processing.db_data_converter as db_data_converter
 import bank.window.data_processing.edit_manipulator as edit_manipulator
 
+import bank.contract.contract_controller as contract_controller
+
 from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidgetItem, QAbstractItemView
 
@@ -66,6 +68,7 @@ class MainWindow(QMainWindow):
 
         self.create_deposit_button.clicked.connect(self._create_deposit_button_click)
         self.current_date = self.db.get_current_date()
+        self.account_manager = contract_controller.ContractController()
 
     def _validate_deposit_fields(self):
         string_data_edits = [
@@ -109,12 +112,25 @@ class MainWindow(QMainWindow):
 
         return None
 
+    def _create_deposit(self):
+        deposit_info = self._get_deposit_info()
+        client_id = int(self.client_id_edit.text())
+        amount = float(self.amount_edit.text())
+        rate = float(deposit_info["rate"])
+        term = int(self.term_combobox.currentText())
+        currency_id = self.db.get_currency_id_by_name(self.currency_combobox.currentText())
+        return self.account_manager.create_deposit(
+            client_id=client_id, amount=amount, contract_number=self.contract_number_edit.text(),
+            rate=rate, term=term, start_date=self.current_date, currency_id=currency_id,
+            deposit_program_id=deposit_info["id"]
+        )
+
     def _create_deposit_button_click(self):
         print('create deposit')
         pipeline = [
             self._validate_deposit_fields,
-            self._validate_deposit_fields_with_db
-            # create_deposit
+            self._validate_deposit_fields_with_db,
+            self._create_deposit
         ]
         for pipeline_func in pipeline:
             error = pipeline_func()
