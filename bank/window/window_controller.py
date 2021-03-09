@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         if not record:
             error = "Клиент не найден."
             MainWindow.call_error_box(error_text=error)
-            self._clear_data_edits(self._get_mapper())
+            MainWindow._clear_data_edits(self._get_mapper())
             return
 
         if self.db.is_deposit_number_exists(self.contract_number_edit):
@@ -146,7 +146,7 @@ class MainWindow(QMainWindow):
                 MainWindow.call_error_box(error_text=error)
                 return
         MainWindow.call_ok_box(ok_text="Депозит успешно оформлен.")
-        self._clear_data_edits(self._get_deposit_mapper())
+        MainWindow._clear_data_edits(self._get_deposit_mapper())
         MainWindow._enable_field(self.currency_label, self.currency_combobox, False)
         MainWindow._enable_field(self.term_label, self.term_combobox, False)
 
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         if not record:
             error = "Запись не найдена."
             MainWindow.call_error_box(error_text=error)
-            self._clear_data_edits(self._get_mapper())
+            MainWindow._clear_data_edits(self._get_mapper())
             return
         self._fill_data_edits(record[0], header)
         self.updating_person_id = person_id
@@ -278,7 +278,8 @@ class MainWindow(QMainWindow):
             if edit:
                 edit_manipulator.fill_edit(edit, header[i], record[i])
 
-    def _clear_data_edits(self, mapper):
+    @staticmethod
+    def _clear_data_edits(mapper):
         for edit in mapper.values():
             edit_manipulator.clear_edit(edit)
 
@@ -421,7 +422,7 @@ class MainWindow(QMainWindow):
                 return
 
         MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
-        self._clear_data_edits(self._get_mapper())
+        MainWindow._clear_data_edits(self._get_mapper())
 
     def _update_button_click(self):
         print('update')
@@ -439,7 +440,7 @@ class MainWindow(QMainWindow):
             MainWindow.call_error_box(error_text=error)
             return
         MainWindow.call_ok_box(ok_text="Клиент успешно обновлен.")
-        self._clear_data_edits(self._get_mapper())
+        MainWindow._clear_data_edits(self._get_mapper())
 
     def _delete_button_click(self):
         print('delete')
