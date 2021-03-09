@@ -430,6 +430,71 @@ class DBController:
             "records": converted_records
         }
 
+    @staticmethod
+    def _convert_db_record_to_dict(record, header):
+        record_dict = {}
+        if len(header) != len(record):
+            raise Exception("Error. Sizes of header and record must be the same.")
+        for i in range(len(header)):
+            record_dict[header[i]] = record[i]
+        return record_dict
+
+    def _get_account_by_id(self, account_id):
+        params = [DBController._create_param_dict("id", account_id, False)]
+        account = self._select_records_by_parameters(db_names.CLIENT_ACCOUNT_TABLE, params)
+        if account:
+            return account[0]
+        return None
+
+    def get_deposits_instances(self, create_account_entity_func, create_deposit_entity_func):
+        """Return dict {
+            "records": [record_1, record_2, ...],
+            "deposit_columns": (column_1_name, column_2_name, ...),
+            "account_columns": (column_1_name, column_2_name, ...)
+        } where record_# is Deposit instance
+        :return:
+        """
+        result_deposit_list = []
+        deposits = self._get_all_rows_from_table(db_names.CLIENT_DEPOSIT_TABLE)
+        header = self.cursor.column_names
+        for deposit in deposits:
+            deposit_dict = DBController._convert_db_record_to_dict(deposit, header)
+            current_account = self._get_account_object(deposit_dict["current_account"], create_account_entity_func)
+            credit_account = self._get_account_object(deposit_dict["credit_account"], create_account_entity_func)
+            deposit_program = self._get_deposit_program_by_id(deposit_dict["deposit_id"])
+            deposit_program_dict = self._convert_db_record_to_dict(deposit_program, self.cursor.column_names)
+            deposit_entity = create_deposit_entity_func(
+                client_id=deposit_dict["client"], deposit_id=deposit_dict["deposit_id"],
+                contract_number=deposit_dict["contract_number"], start_date=deposit_dict["deposit_start_date"],
+                currency_id=deposit_program_dict["currency_id"], rate=deposit_program_dict["rate"],
+                term=deposit_program_dict["term"],
+                current_account=current_account, credit_account=credit_account
+            )
+            result_deposit_list.append(deposit_entity)
+
+        return result_deposit_list
+
+    def _get_deposit_program_by_id(self, deposit_id):
+        params = [DBController._create_param_dict("id", deposit_id, False)]
+        deposit_program = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        if deposit_program:
+            return deposit_program[0]
+        return None
+
+    def _get_account_object(self, account_id, creating_func):
+        account_db_form = self._get_account_by_id(account_id)
+        account_header = self.cursor.column_names
+        account_dict = DBController._convert_db_record_to_dict(account_db_form, account_header)
+        return creating_func(
+            account_type=account_dict["type"],
+            chart_of_accounts=account_dict["chart_of_accounts"],
+            currency_id=account_dict["currency_id"],
+            start_debit=account_dict["debit"],
+            start_credit=account_dict["credit"],
+            account_number=account_dict["number"],
+            account_id=account_dict["id"]
+        )
+
     def _delete_from_table_by_field(self, table_name, field_name, field_value):
         try:
             sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"

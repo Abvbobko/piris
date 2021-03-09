@@ -147,6 +147,28 @@ class ContractController:
         self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
         self.update_account_in_db(current_account)
 
+    @staticmethod
+    def _convert_number_to_account_type(number):
+        return accounts.AccountType(number)
+
+    @staticmethod
+    def get_account_instance(account_type, chart_of_accounts, currency_id, start_debit=0, start_credit=0,
+                             account_number=None, deposit_number=None, account_id=None):
+        account_type = ContractController._convert_number_to_account_type(account_type)
+        return accounts.ClientAccount(
+            account_type=account_type, chart_of_accounts=chart_of_accounts, currency_id=currency_id,
+            start_debit=start_debit, start_credit=start_credit, account_number=account_number,
+            deposit_number=deposit_number, account_id=account_id)
+
+    @staticmethod
+    def get_deposit_instance(client_id, deposit_id, contract_number, currency_id, rate, term, start_date,
+                             current_account, credit_account):
+        return accounts.Deposit(
+            client_id=client_id, deposit_id=deposit_id, contract_number=contract_number, currency_id=currency_id,
+            rate=rate, term=term, start_date=start_date,
+            current_account=current_account, credit_account=credit_account
+        )
+
     # todo: зачислить проценты
     # todo: забрать вклад
 
