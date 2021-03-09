@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>549</width>
+    <width>553</width>
     <height>586</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="adding_tab">
      <attribute name="title">
@@ -717,7 +717,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>521</width>
+        <width>531</width>
         <height>531</height>
        </rect>
       </property>
@@ -1069,6 +1069,121 @@
       </property>
       <property name="readOnly">
        <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="accounts_list_tab">
+     <attribute name="title">
+      <string>Список счетов</string>
+     </attribute>
+     <widget class="QTableWidget" name="accounts_table">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>531</width>
+        <height>501</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="deposit_number_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>91</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Номер договора:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="deposit_number_edit">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>10</y>
+        <width>201</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pick_up_deposit_button">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>10</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Забрать вклад</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="administration_tab">
+     <attribute name="title">
+      <string>Управление</string>
+     </attribute>
+     <widget class="QPushButton" name="close_bank_day_button">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>201</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Закрытие банковского дня</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="bdfa_table">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>531</width>
+        <height>211</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="current_date_label">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>10</y>
+        <width>81</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Текущая дата:</string>
+      </property>
+     </widget>
+     <widget class="QDateEdit" name="current_date_edit">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>10</y>
+        <width>110</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="bdfa_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>171</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Счет фонда развития банка:</string>
       </property>
      </widget>
     </widget>
