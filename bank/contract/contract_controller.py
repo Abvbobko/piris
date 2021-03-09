@@ -41,12 +41,12 @@ class ContractController:
 
     def _load_bdfas(self):
         return ContractController._load_unique_currency_accounts(
-            accounts.AccountType.PASSIVE, const.BFSA_NUMBER, self.db.get_bdfas
+            self.db.get_bdfas, accounts.AccountType.PASSIVE, const.BFSA_NUMBER
         )
 
     def _load_cash_registers(self):
         return ContractController._load_unique_currency_accounts(
-            accounts.AccountType.ACTIVE, const.CASH_REGISTER_NUMBER, self.db.get_cash_registers
+            self.db.get_cash_registers, accounts.AccountType.ACTIVE, const.CASH_REGISTER_NUMBER
         )
 
     def _transform_from_db_to_class(self):
@@ -77,9 +77,9 @@ class ContractController:
             "is_cash_register": is_cash_register,
             "debit": account.get_debit(),
             "credit": account.get_credit(),
-            "type": account.get_type(),
+            "account_type": account.get_type(),
             "currency_id": account.get_currency_id(),
-            "chart_of_accounts": account.get_chart_of_accounts_number(),
+            "chart_of_accounts_number": account.get_chart_of_accounts_number(),
             "account_number": account.get_account_number()
         }
 
@@ -90,7 +90,7 @@ class ContractController:
             "current_account": current_id,
             "credit_account": credit_id,
             "contract_number": deposit.get_contract_number(),
-            "deposit_id": deposit.get_deposit_id(),
+            "deposit_program_id": deposit.get_deposit_id(),
             "deposit_start_date": deposit.get_start_date(),
             "deposit_end_date": deposit.get_end_date()
         }
@@ -100,20 +100,25 @@ class ContractController:
         credit_account = deposit.get_credit_account()
         current_account_dict = ContractController._convert_account_to_db_form(current_account)
         credit_account_dict = ContractController._convert_account_to_db_form(credit_account)
+        print(11)
         error = self.db.insert_account(**current_account_dict)
         if error:
             return error
         current_account_id = self.db.get_last_inserted_id()
         current_account.set_account_id(current_account_id)
         error = self.db.insert_account(**credit_account_dict)
+        print(12)
         if error:
             return error
         credit_account_id = self.db.get_last_inserted_id()
         credit_account.set_account_id(credit_account_id)
+
         deposit_dict = ContractController._convert_deposit_to_db_form(deposit, current_account_id, credit_account_id)
         error = self.db.insert_deposit(**deposit_dict)
+        print(13)
         if error:
             return error
+        print(14)
         return None
 
     def update_account_in_db(self, account: accounts.ClientAccount, is_bdfa=False, is_cash_register=False):
@@ -138,7 +143,6 @@ class ContractController:
         error = self.save_deposit_to_db(deposit)
         if error:
             return error
-
         self._add_to_cash_register(amount, currency_id)
         current_account = deposit.get_current_account()
         self.transfer_between_accounts(self.cash_register[currency_id], current_account, amount)

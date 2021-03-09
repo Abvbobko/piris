@@ -376,7 +376,7 @@ class DBController:
 
     def get_bdfas(self):
         params = [DBController._create_param_dict("is_bdfa", 1, False)]
-        bdfas = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        bdfas = self._select_records_by_parameters(db_names.CLIENT_ACCOUNT_TABLE, params)
         header = self.cursor.column_names
 
         return {
@@ -386,7 +386,7 @@ class DBController:
 
     def get_cash_registers(self):
         params = [DBController._create_param_dict("is_cash_register", 1, False)]
-        bdfas = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
+        bdfas = self._select_records_by_parameters(db_names.CLIENT_ACCOUNT_TABLE, params)
         header = self.cursor.column_names
 
         return {
@@ -494,18 +494,18 @@ class DBController:
             DBController._create_param_dict("current_account", kwargs["current_account"], False),
             DBController._create_param_dict("credit_account", kwargs["credit_account"], False),
             DBController._create_param_dict("contract_number", kwargs["contract_number"], True),
-            DBController._create_param_dict("deposit_id", kwargs["deposit_id"], False),
-            DBController._create_param_dict("deposit_start_date", kwargs["deposit_start_date"], False),
-            DBController._create_param_dict("deposit_end_date", kwargs["deposit_end_date"], False)
+            DBController._create_param_dict("deposit_id", kwargs["deposit_program_id"], False),
+            DBController._create_param_dict("deposit_start_date", kwargs["deposit_start_date"], True),
+            DBController._create_param_dict("deposit_end_date", kwargs["deposit_end_date"], True)
         ]
         if update_mode and deposit_id is not None:
             id_params = [
                 DBController._create_param_dict("current_account", accounts_ids["current"], False),
                 DBController._create_param_dict("credit_account", accounts_ids["credit"], False),
             ]
-            return self._update_record(db_names.CLIENT_ACCOUNT_TABLE, account_data, id_params)
+            return self._update_record(db_names.CLIENT_DEPOSIT_TABLE, account_data, id_params)
 
-        return self._write_to_db(db_names.CLIENT_ACCOUNT_TABLE, account_data)
+        return self._write_to_db(db_names.CLIENT_DEPOSIT_TABLE, account_data)
 
     def get_last_inserted_id(self):
         return self.cursor.lastrowid

@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
 
         self.create_deposit_button.clicked.connect(self._create_deposit_button_click)
         self.current_date = self.db.get_current_date()
-        self.account_manager = contract_controller.ContractController()
+        self.account_manager = contract_controller.ContractController(self.db)
 
     def _validate_deposit_fields(self):
         string_data_edits = [
@@ -137,7 +137,6 @@ class MainWindow(QMainWindow):
             if error:
                 MainWindow.call_error_box(error_text=error)
                 return
-
         MainWindow.call_ok_box(ok_text="Депозит успешно оформлен.")
         # todo: self._clear_data_edits() (---_clear_deposit_data_edits---)
 
