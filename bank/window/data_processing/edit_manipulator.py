@@ -182,3 +182,20 @@ def get_mapper(self):
         "residence_city": self.residence_city_combobox,
         "registration_city": self.registration_city_combobox
     }
+
+
+def get_deposit_mapper(self):
+    return {
+        "contract_number": self.contract_number_edit,
+        "deposit": self.deposit_combobox,
+        "client_id": self.client_id_edit,
+        "is_revocable": self.is_revocable_edit,
+        "currency": self.currency_combobox,
+        "rate": self.rate_edit,
+        "term": self.term_combobox,
+        "deposit_program_start": self.deposit_program_period_from_edit,
+        "deposit_program_end": self.deposit_program_period_to_edit,
+        "min_amount": self.min_amount_edit,
+        "max_amount": self.max_amount_edit,
+        "amount": self.amount_edit
+    }

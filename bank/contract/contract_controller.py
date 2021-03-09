@@ -100,14 +100,12 @@ class ContractController:
         credit_account = deposit.get_credit_account()
         current_account_dict = ContractController._convert_account_to_db_form(current_account)
         credit_account_dict = ContractController._convert_account_to_db_form(credit_account)
-        print(11)
         error = self.db.insert_account(**current_account_dict)
         if error:
             return error
         current_account_id = self.db.get_last_inserted_id()
         current_account.set_account_id(current_account_id)
         error = self.db.insert_account(**credit_account_dict)
-        print(12)
         if error:
             return error
         credit_account_id = self.db.get_last_inserted_id()
@@ -115,10 +113,8 @@ class ContractController:
 
         deposit_dict = ContractController._convert_deposit_to_db_form(deposit, current_account_id, credit_account_id)
         error = self.db.insert_deposit(**deposit_dict)
-        print(13)
         if error:
             return error
-        print(14)
         return None
 
     def update_account_in_db(self, account: accounts.ClientAccount, is_bdfa=False, is_cash_register=False):

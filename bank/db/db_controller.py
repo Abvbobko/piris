@@ -228,7 +228,6 @@ class DBController:
         if sql_where_params:
             sql_request += f" WHERE {sql_where_params}"
 
-        print(sql_request)
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
 
