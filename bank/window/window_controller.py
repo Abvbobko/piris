@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidget
 
 import sys
 import os
+import datetime
 
 
 class MainWindow(QMainWindow):
@@ -77,6 +78,13 @@ class MainWindow(QMainWindow):
         self.find_accounts_button.clicked.connect(self._find_accounts_button_click)
         self.bdfa_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        self.close_bank_day_button.clicked.connect(self._close_bank_day_button_click)
+
+    def _close_bank_day_button_click(self):
+        deposits = self._find_deposits()
+        self.account_manager.close_day(self.current_date, deposits)
+        self.current_date += datetime.timedelta(days=1)
+        self.db.update_current_date(self.current_date)
 
     def _find_accounts_button_click(self):
         deposits = self._find_deposits()
@@ -93,10 +101,13 @@ class MainWindow(QMainWindow):
         accounts.sort(key=lambda x: x[0])
         if len(accounts) == 0:
             return
+        print(header)
         for i in range(len(accounts)):
-            print(i, accounts[i])
             for j in range(len(accounts[i])):
                 self.accounts_table.setItem(i, j, QTableWidgetItem(str(accounts[i][j])))
+                if header[j] == 'Дата окончания' and self.current_date > accounts[i][j]:
+                    # todo: test!!!
+                    self.accounts_table.item(i, j).setBackground(QtGui.QColor(102, 255, 102))
 
     def _find_deposits(self):
         edit_list = [self.deposit_client_id_edit]

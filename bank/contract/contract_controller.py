@@ -1,6 +1,8 @@
 import bank.contract.client_account as accounts
 import bank.contract.constants as const
 from bank.db.db_controller import DBController
+from calendar import monthrange
+import datetime
 
 
 class ContractController:
@@ -220,6 +222,41 @@ class ContractController:
             "Номер счета", "Название", "Тип", "Дебит", "Кредит", "Сальдо", "Валюта"
         ]
 
-    # todo: зачислить проценты
+    @staticmethod
+    def _is_give_persent(date: datetime.date, current_date: datetime.date):
+        if date.day == current_date.day and date != current_date:
+            return True
+        return ContractController._check_day_and_month_length(date, current_date)
+
+    @staticmethod
+    def _check_day_and_month_length(date: datetime.date, current_date: datetime.date):
+        if date == current_date:
+            return False
+        day = date.day
+        if day == 31 and monthrange(date.year, date.month)[1] < 31:
+            return True
+        if day == 30 and monthrange(date.year, date.month)[1] < 30:
+            return True
+        return False
+
+    def close_day(self, current_date, deposits):
+        for deposit in deposits:
+            deposit_end_date = deposit.get_end_date()
+            if current_date == deposit_end_date or \
+                    ContractController._check_day_and_month_length(deposit_end_date, current_date):
+                pass
+                # выдать всю сумму
+            elif current_date > deposit_end_date:
+                # депозит кончился, ничего не делать
+                pass
+            elif ContractController._is_give_persent(deposit_end_date, current_date):
+                # начислит процент
+                pass
+
+            # todo: save(update) deposit to db
+
+        # todo: update cash register
+        # todo: update bdfa
+
     # todo: забрать вклад
 
