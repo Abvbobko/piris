@@ -173,6 +173,53 @@ class ContractController:
             current_account=current_account, credit_account=credit_account
         )
 
+    @staticmethod
+    def get_deposit_table_header():
+        return accounts.Deposit.get_table_header()
+
+    def get_accounts_in_table_form(self, deposits_list):
+        result_list = []
+        for deposit in deposits_list:
+            currency = self._get_currency_name_by_id(deposit.get_currency_id())
+            deposit_accounts = deposit.get_table_form(currency)
+            for account in deposit_accounts:
+                result_list.append(account)
+        return result_list
+
+    def _get_spec_account_in_table_form(self, spec_table_dict, name):
+        result_list = []
+        for currency_id in spec_table_dict.keys():
+            currency = self._get_currency_name_by_id(currency_id)
+            spec_table = [
+                spec_table_dict[currency_id].get_account_number(),
+                name,
+                spec_table_dict[currency_id].get_type_readable(),
+                spec_table_dict[currency_id].get_debit(),
+                spec_table_dict[currency_id].get_credit(),
+                spec_table_dict[currency_id].get_saldo(),
+                currency
+            ]
+            result_list.append(spec_table)
+        return result_list
+
+    def get_cash_registers_in_table_form(self):
+        return self._get_spec_account_in_table_form(self.cash_register, "Касса")
+
+    def get_bdfas_in_table_form(self):
+        return self._get_spec_account_in_table_form(self.bdfa, "СФРБ")
+
+    def get_spec_accounts_in_table_form(self):
+        """Return all bdfa and cash register in table form"""
+        cash_registers = self.get_cash_registers_in_table_form()
+        bdfas = self.get_bdfas_in_table_form()
+        return cash_registers + bdfas
+
+    @staticmethod
+    def get_bdfa_header():
+        return [
+            "Номер счета", "Название", "Тип", "Дебит", "Кредит", "Сальдо", "Валюта"
+        ]
+
     # todo: зачислить проценты
     # todo: забрать вклад
 

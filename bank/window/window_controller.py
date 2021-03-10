@@ -72,24 +72,42 @@ class MainWindow(QMainWindow):
 
         # disable table editing by user
         self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.accounts_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.find_accounts_button.clicked.connect(self._find_accounts)
+        self.find_accounts_button.clicked.connect(self._find_accounts_button_click)
+        self.bdfa_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-    def _fill_deposit_table(self, accounts):
-        pass
 
-    def _find_accounts(self):
+    def _find_accounts_button_click(self):
+        deposits = self._find_deposits()
+        if not deposits:
+            return
+        self._fill_deposit_table(deposits)
+
+    def _fill_deposit_table(self, deposits):
+        header = self.account_manager.get_deposit_table_header()
+        accounts = self.account_manager.get_accounts_in_table_form(deposits)
+        self.accounts_table.setColumnCount(len(header))
+        self.accounts_table.setRowCount(len(accounts))
+        self.accounts_table.setHorizontalHeaderLabels(header)
+        accounts.sort(key=lambda x: x[0])
+        if len(accounts) == 0:
+            return
+        for i in range(len(accounts)):
+            print(i, accounts[i])
+            for j in range(len(accounts[i])):
+                self.accounts_table.setItem(i, j, QTableWidgetItem(str(accounts[i][j])))
+
+    def _find_deposits(self):
         edit_list = [self.deposit_client_id_edit]
         error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
         if error:
             MainWindow.call_error_box(error_text=error)
             return
         person_id = int(self.deposit_client_id_edit.text())
-        accounts = self.db.get_deposits_instances(
+        return self.db.get_deposits_instances(
             person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
         )
-        self._fill_deposit_table(accounts)
 
     def _validate_deposit_fields(self):
         string_data_edits = [
@@ -474,9 +492,6 @@ class MainWindow(QMainWindow):
         MainWindow.call_ok_box(ok_text="Клиент успешно удален.")
         self.id_edit.clear()
 
-    def _account_to_table_form(self, account):
-        pass
-
     def _fill_clients_table(self):
         table_values = self.db.get_clients()
         headers = table_values["columns"]
@@ -493,9 +508,26 @@ class MainWindow(QMainWindow):
             for j in range(len(records[i])):
                 self.clients_table.setItem(i, j, QTableWidgetItem(str(records[i][j])))
 
+    def _fill_bdfa_table(self):
+        header = self.account_manager.get_bdfa_header()
+        bdfas = self.account_manager.get_spec_accounts_in_table_form()  # .get_bdfas_in_table_form()
+
+        self.bdfa_table.setColumnCount(len(header))
+        self.bdfa_table.setRowCount(len(bdfas))
+        self.bdfa_table.setHorizontalHeaderLabels(header)
+
+        if len(bdfas) == 0:
+            return
+        for i in range(len(bdfas)):
+            for j in range(len(bdfas[i])):
+                self.bdfa_table.setItem(i, j, QTableWidgetItem(str(bdfas[i][j])))
+
     def _change_tab(self, index):
         if index == win_const.CLIENT_LIST_TAB_INDEX:
             self._fill_clients_table()
+        elif index == win_const.ADMINISTRATION_TAB_INDEX:
+            self._fill_bdfa_table()
+            edit_manipulator.fill_date_edit(self.current_date_edit, self.current_date)
 
 
 def except_hook(cls, exception, traceback):

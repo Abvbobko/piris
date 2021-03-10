@@ -65,6 +65,13 @@ class ClientAccount:
     def get_type(self):
         return self.type.value
 
+    def get_type_readable(self):
+        if self.type == AccountType.ACTIVE:
+            return "Активный"
+        elif self.type == AccountType.PASSIVE:
+            return "Пассивный"
+        return "Активно-Пассивный"
+
     def get_chart_of_accounts_number(self):
         return self.chart_of_accounts
 
@@ -141,3 +148,38 @@ class Deposit:
 
     def get_contract_number(self):
         return self.contract_number
+
+    def _is_revocable_readable_form(self):
+        return "Да" if self.is_revocable else "Нет"
+
+    def get_term(self):
+        return self.term
+
+    def _account_to_table_form(self, account, account_name, currency):
+        return [
+            self.contract_number,
+            account_name,
+            account.get_account_number(),
+            self._is_revocable_readable_form(),
+            account.get_type_readable(),
+            account.get_debit(),
+            account.get_credit(),
+            account.get_saldo(),
+            self.get_start_date(),
+            self.get_end_date(),
+            self.get_term(),
+            currency,
+            self.deposit_name
+        ]
+
+    def get_table_form(self, currency):
+        return [
+            self._account_to_table_form(self.current_account, "текущий", currency),
+            self._account_to_table_form(self.credit_account, "кредитный", currency)
+        ]
+
+    @staticmethod
+    def get_table_header():
+        return ["Номер договора", "Счет", "Номер счета", "Отзывной", "Тип", "Дебит", "Кредит", "Сальдо",
+                "Дата начала", "Дата окончания", "Ставка %", "Валюта", "Название тарифа"]
+

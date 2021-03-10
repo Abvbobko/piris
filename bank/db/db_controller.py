@@ -464,6 +464,13 @@ class DBController:
             return account[0]
         return None
 
+    def _get_deposit_by_id(self, deposit_id):
+        params = [DBController._create_param_dict("id", deposit_id, False)]
+        deposit = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
+        if deposit:
+            return deposit[0]
+        return None
+
     def get_deposits_instances(self, client_id, create_account_entity_func, create_deposit_entity_func):
         """Return dict {
             "records": [record_1, record_2, ...],
@@ -481,12 +488,17 @@ class DBController:
             credit_account = self._get_account_object(deposit_dict["credit_account"], create_account_entity_func)
             deposit_program = self._get_deposit_program_by_id(deposit_dict["deposit_id"])
             deposit_program_dict = self._convert_db_record_to_dict(deposit_program, self.cursor.column_names)
+
+            main_deposit_info = self._get_deposit_by_id(deposit_program_dict["deposit_id"])
+            main_deposit_info = self._convert_db_record_to_dict(main_deposit_info, self.cursor.column_names)
+
             deposit_entity = create_deposit_entity_func(
                 client_id=deposit_dict["client"], deposit_id=deposit_dict["deposit_id"],
                 contract_number=deposit_dict["contract_number"], start_date=deposit_dict["deposit_start_date"],
                 currency_id=deposit_program_dict["currency_id"], rate=deposit_program_dict["rate"],
                 term=deposit_program_dict["term"],
-                current_account=current_account, credit_account=credit_account
+                current_account=current_account, credit_account=credit_account,
+                is_revocable=main_deposit_info["is_revocable"], deposit_name=main_deposit_info["name"]
             )
             result_deposit_list.append(deposit_entity)
 
