@@ -18,6 +18,15 @@ def set_deposit_fields(self):
         max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
     )
 
+    set_string_edit(
+        self.client_id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
+        max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
+    )
+
+    set_string_edit(
+        self.deposit_client_id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
+        max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
+    )
 
 def set_is_deposit_revocable(edit, value):
     if value:

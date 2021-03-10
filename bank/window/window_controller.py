@@ -74,6 +74,23 @@ class MainWindow(QMainWindow):
         self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.clients_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        self.find_accounts_button.clicked.connect(self._find_accounts)
+
+    def _fill_deposit_table(self, accounts):
+        pass
+
+    def _find_accounts(self):
+        edit_list = [self.deposit_client_id_edit]
+        error = prevalidator.list_validation_call(edit_list, prevalidator.validate_string_edit)
+        if error:
+            MainWindow.call_error_box(error_text=error)
+            return
+        person_id = int(self.deposit_client_id_edit.text())
+        accounts = self.db.get_deposits_instances(
+            person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
+        )
+        self._fill_deposit_table(accounts)
+
     def _validate_deposit_fields(self):
         string_data_edits = [
             self.client_id_edit,
@@ -126,7 +143,8 @@ class MainWindow(QMainWindow):
         return self.account_manager.create_deposit(
             client_id=client_id, amount=amount, contract_number=self.contract_number_edit.text(),
             rate=rate, term=term, start_date=self.current_date, currency_id=currency_id,
-            deposit_program_id=deposit_info["id"]
+            deposit_program_id=deposit_info["id"], is_revocable=deposit_info["is_revocable"],
+            deposit_name=deposit_info["deposit_name"]
         )
 
     def _get_deposit_mapper(self):
@@ -459,11 +477,6 @@ class MainWindow(QMainWindow):
     def _account_to_table_form(self, account):
         pass
 
-    def _fill_accounts_table(self):
-        self.db.get_deposits_instances(
-            self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
-        )
-
     def _fill_clients_table(self):
         table_values = self.db.get_clients()
         headers = table_values["columns"]
@@ -483,9 +496,6 @@ class MainWindow(QMainWindow):
     def _change_tab(self, index):
         if index == win_const.CLIENT_LIST_TAB_INDEX:
             self._fill_clients_table()
-        elif index == win_const.ACCOUNT_LIST_TAB_INDEX:
-            print("accounts")
-            self._fill_accounts_table()
 
 
 def except_hook(cls, exception, traceback):

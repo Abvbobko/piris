@@ -12,6 +12,7 @@ class ContractController:
     @staticmethod
     def _convert_account_to_dict(record, header):
         result = {}
+        print(header)
         for i in range(len(header)):
             result[header[i]] = record[i]
         return result
@@ -35,7 +36,7 @@ class ContractController:
             result_dict[currency_id] = accounts.ClientAccount(
                 account_type, chart_of_accounts_number, currency_id,
                 start_debit=account_record_dict["debit"], start_credit=account_record_dict["credit"],
-                account_number=account_record_dict["number"]
+                account_number=account_record_dict["number"], account_id=account_record_dict["id"]
             )
         return result_dict
 
@@ -126,7 +127,7 @@ class ContractController:
             print("This account doesn't have account_id")
 
     def create_deposit(self, client_id, contract_number, currency_id,
-                       amount, term, deposit_program_id, rate, start_date):
+                       amount, term, deposit_program_id, rate, start_date, is_revocable, deposit_name):
         deposit = accounts.Deposit(
             client_id=client_id,
             deposit_id=deposit_program_id,
@@ -134,7 +135,9 @@ class ContractController:
             currency_id=currency_id,
             rate=rate,
             term=term,
-            start_date=start_date
+            start_date=start_date,
+            deposit_name=deposit_name,
+            is_revocable=is_revocable
         )
         error = self.save_deposit_to_db(deposit)
         if error:
@@ -162,10 +165,11 @@ class ContractController:
 
     @staticmethod
     def get_deposit_instance(client_id, deposit_id, contract_number, currency_id, rate, term, start_date,
+                             is_revocable, deposit_name,
                              current_account, credit_account):
         return accounts.Deposit(
             client_id=client_id, deposit_id=deposit_id, contract_number=contract_number, currency_id=currency_id,
-            rate=rate, term=term, start_date=start_date,
+            rate=rate, term=term, start_date=start_date, is_revocable=is_revocable, deposit_name=deposit_name,
             current_account=current_account, credit_account=credit_account
         )
 

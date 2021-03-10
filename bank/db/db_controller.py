@@ -353,8 +353,24 @@ class DBController:
     def _get_field_value(records, header, field_name):
         return DBController._get_first_list_value(DBController._get_field_by_name(records, header, field_name))
 
+    def _get_id_by_name(self, name, table_name):
+        map_list = self._get_all_rows_from_table(table_name)
+        value_id = None
+        for record in map_list:
+            if record[1] == name:
+                value_id = record[0]
+                break
+        return value_id
+
     def get_deposit_info(self, deposit_name, currency_name, term):
         deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
+        # get main deposit info
+        params = [DBController._create_param_dict("id", deposit_id, False)]
+        deposit = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
+        header = self.cursor.column_names
+        deposit_dict = DBController._convert_db_record_to_dict(deposit[0], header)
+
+        # get deposit program info
         currency_id = self._get_id_by_name(currency_name, db_names.CURRENCY_TABLE)
         params = [
             DBController._create_param_dict("deposit_id", deposit_id, False),
@@ -370,7 +386,9 @@ class DBController:
             "max_amount": DBController._get_field_value(program, header, "max_amount"),
             "rate": DBController._get_field_value(program, header, "rate"),
             "start_date": DBController._get_field_value(program, header, "start_date"),
-            "end_date": DBController._get_field_value(program, header, "end_date")
+            "end_date": DBController._get_field_value(program, header, "end_date"),
+            "deposit_name": deposit_dict["name"],
+            "is_revocable": True if deposit_dict["is_revocable"] else False
         }
 
     def get_bdfas(self):
@@ -446,7 +464,7 @@ class DBController:
             return account[0]
         return None
 
-    def get_deposits_instances(self, create_account_entity_func, create_deposit_entity_func):
+    def get_deposits_instances(self, client_id, create_account_entity_func, create_deposit_entity_func):
         """Return dict {
             "records": [record_1, record_2, ...],
             "deposit_columns": (column_1_name, column_2_name, ...),
@@ -455,7 +473,7 @@ class DBController:
         :return:
         """
         result_deposit_list = []
-        deposits = self._get_all_rows_from_table(db_names.CLIENT_DEPOSIT_TABLE)
+        deposits = self._get_all_clients_deposits(client_id)
         header = self.cursor.column_names
         for deposit in deposits:
             deposit_dict = DBController._convert_db_record_to_dict(deposit, header)
@@ -473,6 +491,11 @@ class DBController:
             result_deposit_list.append(deposit_entity)
 
         return result_deposit_list
+
+    def _get_all_clients_deposits(self, client_id):
+        params = [DBController._create_param_dict("client", client_id, False)]
+        deposits = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
+        return deposits
 
     def _get_deposit_program_by_id(self, deposit_id):
         params = [DBController._create_param_dict("id", deposit_id, False)]
