@@ -552,6 +552,14 @@ class DBController:
         id_params = [DBController._create_param_dict("id", db_names.CURRENT_DATE_ID, False)]
         return self._update_record(db_names.CURRENT_DATE_TABLE, params, id_params)
 
+    def update_deposit_end_date(self, current_account_id, credit_account_id, new_end_date):
+        params = [DBController._create_param_dict("deposit_end_date", new_end_date, True)]
+        id_params = [
+            DBController._create_param_dict("current_account_id", current_account_id, False),
+            DBController._create_param_dict("credit_account_id", credit_account_id, False)
+        ]
+        return self._update_record(db_names.CLIENT_DEPOSIT_TABLE, params, id_params)
+
     def insert_account(self, update_mode=False, account_id=None, **kwargs):
         account_data = [
             DBController._create_param_dict("is_bdfa", kwargs["is_bdfa"], False),

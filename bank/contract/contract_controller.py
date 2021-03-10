@@ -239,24 +239,70 @@ class ContractController:
             return True
         return False
 
+    def _update_deposit_end_date(self, deposit: accounts.Deposit, new_end_date):
+        return self.db.update_deposit_end_date(
+            deposit.current_account.get_account_id(),
+            deposit.credit_account.get_account_id(),
+            new_end_date
+        )
+
+    def _give_all_amount(self, deposit: accounts.Deposit, current_date):
+        deposit.set_end_date(current_date)
+        currency_id = deposit.get_currency_id()
+        current_account = deposit.get_current_account()
+
+        # снять все с текущего
+        self.transfer_between_accounts(self.bdfa[currency_id], current_account, current_account.get_debit())
+        amount = current_account.get_saldo()
+        self.transfer_between_accounts(current_account, self.cash_register[currency_id], amount)
+        self._sub_from_cash_register(currency_id=currency_id, value=amount)
+
+        # снять все с процентного
+        credit_account = deposit.get_credit_account()
+        amount = credit_account.get_saldo()
+        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], amount)
+        self._sub_from_cash_register(value=amount, currency_id=currency_id)
+
+        # update accounts
+        self.update_account_in_db(current_account)
+        self.update_account_in_db(credit_account)
+        self._update_deposit_end_date(deposit, current_date)
+        self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
+        self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
+
+    def _give_percent(self, deposit: accounts.Deposit):
+        currency_id = deposit.get_currency_id()
+        current_account = deposit.get_current_account()
+        amount = current_account.get_debit()
+        credit_account = deposit.get_credit_account()
+        # amount + year percent / num of month
+        percent_amount = (amount * deposit.get_term() + amount) / 12
+        self.transfer_between_accounts(self.bdfa[currency_id], credit_account, percent_amount)
+        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], percent_amount)
+        self._sub_from_cash_register(value=percent_amount, currency_id=currency_id)
+        # update accounts
+        self.update_account_in_db(credit_account)
+        self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
+        self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
+
     def close_day(self, current_date, deposits):
         for deposit in deposits:
             deposit_end_date = deposit.get_end_date()
             if current_date == deposit_end_date or \
                     ContractController._check_day_and_month_length(deposit_end_date, current_date):
-                pass
-                # выдать всю сумму
+
+                self._give_all_amount(deposit, current_date)
             elif current_date > deposit_end_date:
                 # депозит кончился, ничего не делать
                 pass
             elif ContractController._is_give_persent(deposit_end_date, current_date):
-                # начислит процент
-                pass
+                self._give_percent(deposit)
 
-            # todo: save(update) deposit to db
-
-        # todo: update cash register
-        # todo: update bdfa
+    def close_deposit(self, deposit, current_date):
+        if deposit.get_is_revocable():
+            self._give_all_amount(deposit, current_date)
+            return None
+        return f"Депозит {deposit.get_contract_number()} не является отзывным."
 
     # todo: забрать вклад
 

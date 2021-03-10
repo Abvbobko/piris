@@ -183,3 +183,9 @@ class Deposit:
         return ["Номер договора", "Счет", "Номер счета", "Отзывной", "Тип", "Дебит", "Кредит", "Сальдо",
                 "Дата начала", "Дата окончания", "Ставка %", "Валюта", "Название тарифа"]
 
+    def set_end_date(self, new_end_date):
+        self.end_date = new_end_date
+
+    def get_is_revocable(self):
+        return self.is_revocable
+
