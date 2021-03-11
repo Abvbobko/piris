@@ -89,6 +89,9 @@ class MainWindow(QMainWindow):
         self.close_bank_month_button.clicked.connect(self._close_bank_month_button_click)
 
         self.deposit_type_combobox.clear()
+        self.current_deposit_type = 0
+        # 0 - deposit
+        # 1 - credit
         self.deposit_type_combobox.addItems([DepositType.DEPOSIT.value, DepositType.CREDIT.value])
         self.deposit_type_combobox.currentTextChanged.connect(self._change_deposit_type)
 
@@ -102,10 +105,12 @@ class MainWindow(QMainWindow):
             self._set_deposit_labels("Депозит:", "Оформить вклад", "Отзывной:")
             deposits = self.db.get_deposits()
             fields_setter.set_combobox(self.deposit_combobox, deposits, "Депозит")
+            self.current_deposit_type = 0
         elif value == DepositType.CREDIT.value:
             self._set_deposit_labels("Кредит:", "Оформить кредит", "Тип:")
             credits_list = self.db.get_deposits(is_credit=1)
             fields_setter.set_combobox(self.deposit_combobox, credits_list, "Кредит")
+            self.current_deposit_type = 1
 
     def _close_bank_month_button_click(self):
         for i in range(30):
@@ -146,7 +151,12 @@ class MainWindow(QMainWindow):
         deposits = self.db.get_deposits_instances(
             person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
         )
+        credits_list = self.db.get_deposits_instances(
+            person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance,
+            is_credits=1
+        )
         self.account_manager.close_day(self.current_date, deposits)
+        self.account_manager.close_credit_day(self.current_date, credits_list)
         self.current_date += datetime.timedelta(days=1)
         self.db.update_current_date(self.current_date)
 
@@ -246,7 +256,12 @@ class MainWindow(QMainWindow):
         rate = float(deposit_info["rate"])
         term = int(self.term_combobox.currentText())
         currency_id = self.db.get_currency_id_by_name(self.currency_combobox.currentText())
-        return self.account_manager.create_deposit(
+
+        if self.current_deposit_type == 0:
+            deposit_creating_func = self.account_manager.create_deposit
+        else:
+            deposit_creating_func = self.account_manager.create_credit
+        return deposit_creating_func(
             client_id=client_id, amount=amount, contract_number=self.contract_number_edit.text(),
             rate=rate, term=term, start_date=self.current_date, currency_id=currency_id,
             deposit_program_id=deposit_info["id"], is_revocable=deposit_info["is_revocable"],
@@ -259,6 +274,7 @@ class MainWindow(QMainWindow):
 
     def _create_deposit_button_click(self):
         print('create deposit')
+
         pipeline = [
             self._validate_deposit_fields,
             self._validate_deposit_fields_with_db,
@@ -269,7 +285,11 @@ class MainWindow(QMainWindow):
             if error:
                 MainWindow.call_error_box(error_text=error)
                 return
-        MainWindow.call_ok_box(ok_text="Депозит успешно оформлен.")
+        if self.current_deposit_type == 0:
+            deposit_type = "Депозит"
+        else:
+            deposit_type = "Кредит"
+        MainWindow.call_ok_box(ok_text=f"{deposit_type} успешно оформлен.")
         MainWindow._clear_data_edits(self._get_deposit_mapper())
         MainWindow._enable_field(self.currency_label, self.currency_combobox, False)
         MainWindow._enable_field(self.term_label, self.term_combobox, False)
@@ -314,7 +334,12 @@ class MainWindow(QMainWindow):
     def _choose_deposit(self, value):
         if value:
             MainWindow._enable_field(self.currency_label, self.currency_combobox, True)
-            fields_setter.set_is_deposit_revocable(self.is_revocable_edit, self.db.is_deposit_revocable(value))
+
+            if self.current_deposit_type == 0:
+                text_setting_func = fields_setter.set_is_deposit_revocable
+            else:
+                text_setting_func = fields_setter.set_credit_type
+            text_setting_func(self.is_revocable_edit, self.db.is_deposit_revocable(value))
             fields_setter.set_combobox(self.currency_combobox, self.db.get_currencies(), "Валюта")
         else:
             edit_manipulator.clear_edit(self.is_revocable_edit)

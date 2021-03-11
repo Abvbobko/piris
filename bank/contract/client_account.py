@@ -88,7 +88,7 @@ class ClientAccount:
 
 class Deposit:
     def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date, is_revocable,
-                 deposit_name, current_account=None, credit_account=None, end_date=None):
+                 deposit_name, current_account=None, credit_account=None, end_date=None, is_credit=False):
         """Класс депозита
         :param client_id: id клиента (надо для таблицы)
         :param deposit_id: id тарифа (со своим планом)
@@ -106,11 +106,12 @@ class Deposit:
         self.deposit_id = deposit_id
         self.is_revocable = is_revocable
         self.deposit_name = deposit_name
+        account_type = AccountType.ACTIVE if is_credit else AccountType.PASSIVE
         self.current_account = current_account if current_account else Deposit.create_account(
-            AccountType.PASSIVE, 3014, currency_id, contract_number
+            account_type, 3014, currency_id, contract_number
         )
         self.credit_account = credit_account if credit_account else Deposit.create_account(
-            AccountType.PASSIVE, 2400, currency_id, contract_number
+            account_type, 2400, currency_id, contract_number
         )
         self.currency_id = currency_id
         self.rate = rate
@@ -197,6 +198,9 @@ class Deposit:
 
     def get_is_revocable(self):
         return self.is_revocable
+
+    def get_rate(self):
+        return self.rate
 
 
 

@@ -33,11 +33,19 @@ def set_deposit_fields(self):
         max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
     )
 
+
 def set_is_deposit_revocable(edit, value):
     if value:
         set_text_to_edit(edit, "да")
     else:
         set_text_to_edit(edit, "нет")
+
+
+def set_credit_type(edit, value):
+    if value:
+        set_text_to_edit(edit, "анн.")
+    else:
+        set_text_to_edit(edit, "дифф.")
 
 
 def set_all_fields(self):

@@ -171,6 +171,36 @@ class ContractController:
         self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
         self.update_account_in_db(current_account)
 
+    def create_credit(self, client_id, contract_number, currency_id,
+                      amount, term, deposit_program_id, rate, start_date, is_revocable, deposit_name):
+        credit = accounts.Deposit(
+            client_id=client_id,
+            deposit_id=deposit_program_id,
+            contract_number=contract_number,
+            currency_id=currency_id,
+            rate=rate,
+            term=term,
+            start_date=start_date,
+            deposit_name=deposit_name,
+            is_revocable=is_revocable,
+            is_credit=True
+        )
+        error = self.save_deposit_to_db(credit)
+        if error:
+            return error
+
+        current_account = credit.get_current_account()
+        self.transfer_between_accounts(self.bdfa[currency_id], current_account, amount,
+                                       self.log_file, start_date)
+        self.transfer_between_accounts(current_account, self.cash_register[currency_id],amount,
+                                       self.log_file, start_date)
+
+        self._sub_from_cash_register(amount, currency_id, self.log_file, credit.start_date)
+
+        self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
+        self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
+        self.update_account_in_db(current_account)
+
     @staticmethod
     def _convert_number_to_account_type(number):
         return accounts.AccountType(number)
@@ -325,6 +355,86 @@ class ContractController:
                 pass
             elif ContractController._is_give_persent(deposit_end_date, current_date):
                 self._give_percent(deposit, current_date)
+
+    @staticmethod
+    def calculate_annuity_amount(start_amount, num_of_month, rate):
+        i = rate / (num_of_month*100)
+        k = (i*(1+i)**12)/((1+i)**12 - 1)
+        return round(start_amount/num_of_month, 2), round(k * start_amount, 2)
+
+    @staticmethod
+    def calculate_differentiated_amount(start_amount, end_date, current_date, rate, paid_amount):
+        """
+
+        :param start_amount:
+        :param end_date:
+        :param current_date:
+        :param rate:
+        :param paid_amount:
+        :return: основной, процентный
+        """
+        # paid - выплаченная часть кредита
+        outstanding_balance = start_amount - paid_amount  # остаток задолженности
+        remaining_months = (end_date - current_date).days // 30
+        month_rate = rate / (12*100)
+        return round(outstanding_balance*1/remaining_months, 2), round(outstanding_balance*month_rate, 2)
+
+    def _close_credit(self, credit):
+        pass
+
+    def _paid_percent(self, credit: accounts.Deposit, current_date):
+        currency_id = credit.get_currency_id()
+        if credit.get_is_revocable() == 0:
+            # diff
+            main, percent = ContractController.calculate_differentiated_amount(
+                credit.get_current_account().get_debit(),
+                credit.get_end_date(),
+                current_date,
+                credit.get_rate(),
+                credit.get_credit_account().get_debit()
+            )
+        else:
+            # ann
+            main, percent = ContractController.calculate_annuity_amount(credit.get_current_account().get_debit(),
+                                                                        credit.get_term(),
+                                                                        credit.get_rate())
+            # проценты
+            credit_account = credit.get_credit_account()
+            self.transfer_between_accounts(credit_account, self.bdfa[currency_id], percent,
+                                           self.log_file, current_date)
+            self._add_to_cash_register(value=percent, currency_id=currency_id, log_file=self.log_file,
+                                       current_date=current_date)
+            self.transfer_between_accounts(self.cash_register[currency_id], credit_account, percent,
+                                           self.log_file, current_date)
+            # основной
+            self._add_to_cash_register(value=main, currency_id=currency_id, log_file=self.log_file,
+                                       current_date=current_date)
+            current_account = credit.get_current_account()
+            self.transfer_between_accounts(self.cash_register[currency_id], current_account, main,
+                                           self.log_file, current_date)
+            self.transfer_between_accounts(current_account, self.bdfa[currency_id], main,
+                                           self.log_file, current_date)
+            # update accounts
+            self.update_account_in_db(current_account)
+            self.update_account_in_db(credit_account)
+            self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
+            self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
+
+    def close_credit_day(self, current_date, credit_list):
+        for credit in credit_list:
+            deposit_end_date = credit.get_end_date()
+            if current_date == deposit_end_date or \
+                    ContractController._check_day_and_month_length(deposit_end_date, current_date):
+                pass
+                # СНЯТЬ ВСЕ СУММУ (ВЕРНУТЬ КРЕДИТ)
+                # не надо, все возвращаем каждый месяц
+                # self._give_all_amount(credit, current_date)
+            elif current_date > deposit_end_date:
+                # кредит кончился, ничего не делать
+                pass
+            elif ContractController._is_give_persent(deposit_end_date, current_date):
+                self._paid_percent(credit, current_date)
+                # снять процент
 
     def close_deposit(self, deposit, current_date):
         if deposit.get_is_revocable():

@@ -493,7 +493,8 @@ class DBController:
         return None
 
     def get_deposits_instances(self, client_id,
-                               create_account_entity_func, create_deposit_entity_func, deposit_number=None):
+                               create_account_entity_func, create_deposit_entity_func, deposit_number=None,
+                               is_credits=0):
         """Return dict {
             "records": [record_1, record_2, ...],
             "deposit_columns": (column_1_name, column_2_name, ...),
@@ -507,7 +508,6 @@ class DBController:
             deposits = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
             if not deposits:
                 return "Депозита с таким номером нет."
-            deposit = deposits[0]
         elif client_id is not None:
             deposits = self._get_all_clients_deposits(client_id)
         else:
@@ -522,17 +522,18 @@ class DBController:
 
             main_deposit_info = self._get_deposit_by_id(deposit_program_dict["deposit_id"])
             main_deposit_info = self._convert_db_record_to_dict(main_deposit_info, self.cursor.column_names)
-
-            deposit_entity = create_deposit_entity_func(
-                client_id=deposit_dict["client"], deposit_id=deposit_dict["deposit_id"],
-                contract_number=deposit_dict["contract_number"], start_date=deposit_dict["deposit_start_date"],
-                currency_id=deposit_program_dict["currency_id"], rate=deposit_program_dict["rate"],
-                term=deposit_program_dict["term"],
-                current_account=current_account, credit_account=credit_account,
-                is_revocable=main_deposit_info["is_revocable"], deposit_name=main_deposit_info["name"],
-                end_date=deposit_dict["deposit_end_date"]
-            )
-            result_deposit_list.append(deposit_entity)
+            if is_credits == main_deposit_info["type"]:
+                # if credit - 0 and type - 0 or credit - 1 and type - 1
+                deposit_entity = create_deposit_entity_func(
+                    client_id=deposit_dict["client"], deposit_id=deposit_dict["deposit_id"],
+                    contract_number=deposit_dict["contract_number"], start_date=deposit_dict["deposit_start_date"],
+                    currency_id=deposit_program_dict["currency_id"], rate=deposit_program_dict["rate"],
+                    term=deposit_program_dict["term"],
+                    current_account=current_account, credit_account=credit_account,
+                    is_revocable=main_deposit_info["is_revocable"], deposit_name=main_deposit_info["name"],
+                    end_date=deposit_dict["deposit_end_date"]
+                )
+                result_deposit_list.append(deposit_entity)
 
         return result_deposit_list
 
