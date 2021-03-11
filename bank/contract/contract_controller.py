@@ -168,11 +168,11 @@ class ContractController:
     @staticmethod
     def get_deposit_instance(client_id, deposit_id, contract_number, currency_id, rate, term, start_date,
                              is_revocable, deposit_name,
-                             current_account, credit_account):
+                             current_account, credit_account, end_date=None):
         return accounts.Deposit(
             client_id=client_id, deposit_id=deposit_id, contract_number=contract_number, currency_id=currency_id,
             rate=rate, term=term, start_date=start_date, is_revocable=is_revocable, deposit_name=deposit_name,
-            current_account=current_account, credit_account=credit_account
+            current_account=current_account, credit_account=credit_account, end_date=end_date
         )
 
     @staticmethod
@@ -240,6 +240,7 @@ class ContractController:
         return False
 
     def _update_deposit_end_date(self, deposit: accounts.Deposit, new_end_date):
+        print("update", deposit.get_end_date())
         return self.db.update_deposit_end_date(
             deposit.current_account.get_account_id(),
             deposit.credit_account.get_account_id(),
@@ -247,7 +248,9 @@ class ContractController:
         )
 
     def _give_all_amount(self, deposit: accounts.Deposit, current_date):
+        print("start")
         deposit.set_end_date(current_date)
+        print(deposit.get_end_date())
         currency_id = deposit.get_currency_id()
         current_account = deposit.get_current_account()
 
@@ -300,7 +303,7 @@ class ContractController:
 
     def close_deposit(self, deposit, current_date):
         if deposit.get_is_revocable():
-            if deposit.get_end_date() < current_date:
+            if deposit.get_end_date() <= current_date:
                 return f"Депозит {deposit.get_contract_number()} уже закрыт."
             self._give_all_amount(deposit, current_date)
             return None

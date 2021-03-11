@@ -353,15 +353,6 @@ class DBController:
     def _get_field_value(records, header, field_name):
         return DBController._get_first_list_value(DBController._get_field_by_name(records, header, field_name))
 
-    def _get_id_by_name(self, name, table_name):
-        map_list = self._get_all_rows_from_table(table_name)
-        value_id = None
-        for record in map_list:
-            if record[1] == name:
-                value_id = record[0]
-                break
-        return value_id
-
     def get_deposit_info(self, deposit_name, currency_name, term):
         deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
         # get main deposit info
@@ -508,7 +499,8 @@ class DBController:
                 currency_id=deposit_program_dict["currency_id"], rate=deposit_program_dict["rate"],
                 term=deposit_program_dict["term"],
                 current_account=current_account, credit_account=credit_account,
-                is_revocable=main_deposit_info["is_revocable"], deposit_name=main_deposit_info["name"]
+                is_revocable=main_deposit_info["is_revocable"], deposit_name=main_deposit_info["name"],
+                end_date=deposit_dict["deposit_end_date"]
             )
             result_deposit_list.append(deposit_entity)
 
@@ -558,16 +550,18 @@ class DBController:
         return curr_date[0][1]
 
     def update_current_date(self, new_date):
-        params = [DBController._create_param_dict("curr_date", new_date, False)]
+        params = [DBController._create_param_dict("curr_date", new_date, True)]
         id_params = [DBController._create_param_dict("id", db_names.CURRENT_DATE_ID, False)]
         return self._update_record(db_names.CURRENT_DATE_TABLE, params, id_params)
 
     def update_deposit_end_date(self, current_account_id, credit_account_id, new_end_date):
         params = [DBController._create_param_dict("deposit_end_date", new_end_date, True)]
+        print("!!!!!!!!!!!!!!!!!", new_end_date)
         id_params = [
-            DBController._create_param_dict("current_account_id", current_account_id, False),
-            DBController._create_param_dict("credit_account_id", credit_account_id, False)
+            DBController._create_param_dict("current_account", current_account_id, False),
+            DBController._create_param_dict("credit_account", credit_account_id, False)
         ]
+        print(current_account_id, credit_account_id)
         return self._update_record(db_names.CLIENT_DEPOSIT_TABLE, params, id_params)
 
     def insert_account(self, update_mode=False, account_id=None, **kwargs):

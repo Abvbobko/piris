@@ -80,6 +80,13 @@ class MainWindow(QMainWindow):
 
         self.close_bank_day_button.clicked.connect(self._close_bank_day_button_click)
         self.pick_up_deposit_button.clicked.connect(self._pick_up_deposit_button_click)
+        self.close_bank_month_button.clicked.connect(self._close_bank_month_button_click)
+
+    def _close_bank_month_button_click(self):
+        for i in range(30):
+            self._close_bank_day()
+        MainWindow.call_ok_box(ok_text="Банковский месяц завершен.")
+        self._change_tab(win_const.ADMINISTRATION_TAB_INDEX)
 
     def _pick_up_deposit_button_click(self):
         string_data_edits = [self.deposit_number_edit]
@@ -97,15 +104,19 @@ class MainWindow(QMainWindow):
             MainWindow.call_error_box(error_text=deposit)
             return
         if deposit:
+
             error = self.account_manager.close_deposit(deposit[0], self.current_date)
             if error:
                 MainWindow.call_error_box(error_text=error)
                 return
             MainWindow.call_ok_box(ok_text="Депозит успешно отозван.")
-        # todo: тут надо очистить все поля
-        # MainWindow._clear_data_edits(self._get_mapper())
 
-    def _close_bank_day_button_click(self):
+        deposits = self._find_deposits()
+        if not deposits:
+            return
+        self._fill_deposit_table(deposits)
+
+    def _close_bank_day(self):
         person_id = None  # get all records
         deposits = self.db.get_deposits_instances(
             person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
@@ -113,7 +124,11 @@ class MainWindow(QMainWindow):
         self.account_manager.close_day(self.current_date, deposits)
         self.current_date += datetime.timedelta(days=1)
         self.db.update_current_date(self.current_date)
+
+    def _close_bank_day_button_click(self):
+        self._close_bank_day()
         MainWindow.call_ok_box(ok_text="Банковский день завершен.")
+        self._change_tab(win_const.ADMINISTRATION_TAB_INDEX)
 
     def _find_accounts_button_click(self):
         deposits = self._find_deposits()
@@ -131,12 +146,20 @@ class MainWindow(QMainWindow):
         if len(accounts) == 0:
             return
         print(header)
+        print("ACCOUNTS")
+        for account in accounts:
+            print(account)
+
+        colored_row = []
         for i in range(len(accounts)):
             for j in range(len(accounts[i])):
                 self.accounts_table.setItem(i, j, QTableWidgetItem(str(accounts[i][j])))
-                if header[j] == 'Дата окончания' and self.current_date > accounts[i][j]:
-                    for color_j in range(accounts[i]):
-                        self.accounts_table.item(i, color_j).setBackground(QtGui.QColor(102, 255, 102))
+                if header[j] == 'Дата окончания' and self.current_date >= accounts[i][j]:
+                    colored_row.append(i)
+
+        for i in colored_row:
+            for j in range(len(accounts[i])):
+                self.accounts_table.item(i, j).setBackground(QtGui.QColor(102, 255, 102))
 
     def _find_deposits(self):
         edit_list = [self.deposit_client_id_edit]
@@ -568,6 +591,7 @@ class MainWindow(QMainWindow):
         elif index == win_const.ADMINISTRATION_TAB_INDEX:
             self._fill_bdfa_table()
             edit_manipulator.fill_date_edit(self.current_date_edit, self.current_date)
+            self.accounts_table.clear()
 
 
 def except_hook(cls, exception, traceback):

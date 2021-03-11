@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="adding_tab">
      <attribute name="title">
@@ -143,7 +143,7 @@
      <widget class="QRadioButton" name="w_radio_button">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>310</x>
         <y>70</y>
         <width>82</width>
         <height>17</height>
@@ -185,9 +185,9 @@
      <widget class="QRadioButton" name="m_radio_button">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>260</x>
         <y>70</y>
-        <width>82</width>
+        <width>41</width>
         <height>17</height>
        </rect>
       </property>
@@ -1168,7 +1168,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>201</width>
+        <width>161</width>
         <height>41</height>
        </rect>
       </property>
@@ -1223,6 +1223,19 @@
       </property>
       <property name="text">
        <string>Счет фонда развития банка:</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="close_bank_month_button">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Закрытие банковского месяца</string>
       </property>
      </widget>
     </widget>

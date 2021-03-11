@@ -1,6 +1,7 @@
 from enum import Enum
 import datetime
 import dateutil.relativedelta as relativedelta
+import calendar
 
 
 class AccountType(Enum):
@@ -87,7 +88,7 @@ class ClientAccount:
 
 class Deposit:
     def __init__(self, client_id, deposit_id, contract_number, currency_id, rate, term, start_date, is_revocable,
-                 deposit_name, current_account=None, credit_account=None):
+                 deposit_name, current_account=None, credit_account=None, end_date=None):
         """Класс депозита
         :param client_id: id клиента (надо для таблицы)
         :param deposit_id: id тарифа (со своим планом)
@@ -115,11 +116,19 @@ class Deposit:
         self.rate = rate
         self.term = term
         self.start_date = start_date
-        self.end_date = Deposit.calculate_end_date(start_date, term)
+        self.end_date = end_date if end_date else Deposit.calculate_end_date(start_date, term)
+
+    @staticmethod
+    def add_months(source_date, months):
+        month = source_date.month - 1 + months
+        year = source_date.year + month // 12
+        month = month % 12 + 1
+        day = min(source_date.day, calendar.monthrange(year, month)[1])
+        return datetime.date(year, month, day)
 
     @staticmethod
     def calculate_end_date(start_date, term):
-        return start_date + relativedelta.relativedelta(month=term)
+        return Deposit.add_months(start_date, term)
 
     @staticmethod
     def create_account(account_type, chart_of_accounts_code, currency_id, deposit_number):
