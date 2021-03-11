@@ -10,6 +10,7 @@ class ContractController:
         self.db = db
         self.bdfa = self._load_bdfas()
         self.cash_register = self._load_cash_registers()
+        self.log_file = "../transactions.txt"
 
     @staticmethod
     def _convert_account_to_dict(record, header):
@@ -61,15 +62,26 @@ class ContractController:
     def _get_currency_name_by_id(self, currency_id):
         return self.db.get_currency_name_by_id(currency_id)
 
-    def _add_to_cash_register(self, value, currency_id):
+    def _add_to_cash_register(self, value, currency_id, log_file, current_date):
+        with open(log_file, 'a') as f:
+            print(self.cash_register)
+            f.write(f"date: {current_date}, to: {self.cash_register[currency_id].get_account_number()}, " +
+                    f"amount: {value}\n")
         self.cash_register[currency_id].add_amount(value)
 
-    def _sub_from_cash_register(self, value, currency_id):
+    def _sub_from_cash_register(self, value, currency_id, log_file, current_date):
+        with open(log_file, 'a') as f:
+            f.write(f"date: {current_date}, to: {self.cash_register[currency_id].get_account_number()}," +
+                    f" amount: {value}\n")
         self.cash_register[currency_id].sub_amount(value)
 
     @staticmethod
-    def transfer_between_accounts(account_a: accounts.ClientAccount, account_b: accounts.ClientAccount, amount):
+    def transfer_between_accounts(account_a: accounts.ClientAccount, account_b: accounts.ClientAccount,
+                                  amount, log_file, date):
         """Передать сумму от a к b"""
+        with open(log_file, 'a') as f:
+            f.write(f"date: {date}, from: {account_a.get_account_number()}," +
+                    f" to: {account_b.get_account_number()}, amount: {amount}\n")
         account_a.sub_amount(amount)
         account_b.add_amount(amount)
 
@@ -144,10 +156,12 @@ class ContractController:
         error = self.save_deposit_to_db(deposit)
         if error:
             return error
-        self._add_to_cash_register(amount, currency_id)
+        self._add_to_cash_register(amount, currency_id, self.log_file, deposit.start_date)
         current_account = deposit.get_current_account()
-        self.transfer_between_accounts(self.cash_register[currency_id], current_account, amount)
-        self.transfer_between_accounts(current_account, self.bdfa[currency_id], amount)
+        self.transfer_between_accounts(self.cash_register[currency_id], current_account, amount,
+                                       self.log_file, start_date)
+        self.transfer_between_accounts(current_account, self.bdfa[currency_id], amount,
+                                       self.log_file, start_date)
         self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
         self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
         self.update_account_in_db(current_account)
@@ -248,23 +262,26 @@ class ContractController:
         )
 
     def _give_all_amount(self, deposit: accounts.Deposit, current_date):
-        print("start")
         deposit.set_end_date(current_date)
-        print(deposit.get_end_date())
         currency_id = deposit.get_currency_id()
         current_account = deposit.get_current_account()
 
         # снять все с текущего
-        self.transfer_between_accounts(self.bdfa[currency_id], current_account, current_account.get_debit())
+        self.transfer_between_accounts(self.bdfa[currency_id], current_account, current_account.get_debit(),
+                                       self.log_file, current_date)
         amount = current_account.get_saldo()
-        self.transfer_between_accounts(current_account, self.cash_register[currency_id], amount)
-        self._sub_from_cash_register(currency_id=currency_id, value=amount)
+        self.transfer_between_accounts(current_account, self.cash_register[currency_id], amount,
+                                       self.log_file, current_date)
+        self._sub_from_cash_register(currency_id=currency_id, value=amount, log_file=self.log_file,
+                                     current_date=current_date)
 
         # снять все с процентного
         credit_account = deposit.get_credit_account()
         amount = credit_account.get_saldo()
-        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], amount)
-        self._sub_from_cash_register(value=amount, currency_id=currency_id)
+        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], amount,
+                                       self.log_file, current_date)
+        self._sub_from_cash_register(value=amount, currency_id=currency_id, log_file=self.log_file,
+                                     current_date=current_date)
 
         # update accounts
         self.update_account_in_db(current_account)
@@ -273,16 +290,19 @@ class ContractController:
         self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
         self.update_account_in_db(self.cash_register[currency_id], is_cash_register=True)
 
-    def _give_percent(self, deposit: accounts.Deposit):
+    def _give_percent(self, deposit: accounts.Deposit, current_date):
         currency_id = deposit.get_currency_id()
         current_account = deposit.get_current_account()
         amount = current_account.get_debit()
         credit_account = deposit.get_credit_account()
         # amount + year percent / num of month
         percent_amount = round((amount * deposit.get_term() + amount) / 12, 2)
-        self.transfer_between_accounts(self.bdfa[currency_id], credit_account, percent_amount)
-        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], percent_amount)
-        self._sub_from_cash_register(value=percent_amount, currency_id=currency_id)
+        self.transfer_between_accounts(self.bdfa[currency_id], credit_account, percent_amount,
+                                       self.log_file, current_date)
+        self.transfer_between_accounts(credit_account, self.cash_register[currency_id], percent_amount,
+                                       self.log_file, current_date)
+        self._sub_from_cash_register(value=percent_amount, currency_id=currency_id, log_file=self.log_file,
+                                     current_date=current_date)
         # update accounts
         self.update_account_in_db(credit_account)
         self.update_account_in_db(self.bdfa[currency_id], is_bdfa=True)
@@ -299,7 +319,7 @@ class ContractController:
                 # депозит кончился, ничего не делать
                 pass
             elif ContractController._is_give_persent(deposit_end_date, current_date):
-                self._give_percent(deposit)
+                self._give_percent(deposit, current_date)
 
     def close_deposit(self, deposit, current_date):
         if deposit.get_is_revocable():

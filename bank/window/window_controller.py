@@ -591,7 +591,10 @@ class MainWindow(QMainWindow):
         elif index == win_const.ADMINISTRATION_TAB_INDEX:
             self._fill_bdfa_table()
             edit_manipulator.fill_date_edit(self.current_date_edit, self.current_date)
-            self.accounts_table.clear()
+            self.accounts_table.clearContents()
+            self.accounts_table.setRowCount(0)
+            self.deposit_number_edit.clear()
+            self.deposit_client_id_edit.clear()
 
 
 def except_hook(cls, exception, traceback):
