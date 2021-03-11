@@ -81,33 +81,29 @@ class MainWindow(QMainWindow):
         self.close_bank_day_button.clicked.connect(self._close_bank_day_button_click)
         self.pick_up_deposit_button.clicked.connect(self._pick_up_deposit_button_click)
 
-    def _validate_account_list_fields(self):
+    def _pick_up_deposit_button_click(self):
         string_data_edits = [self.deposit_number_edit]
 
         error = prevalidator.list_validation_call(string_data_edits, prevalidator.validate_string_edit)
         if error:
-            return error
+            MainWindow.call_error_box(error_text=error)
+            return
 
-    def _validate_account_list_fields_with_db(self):
-        return None
-
-    def _pick_up_deposit_button_click(self):
-        pipeline = [
-            self._validate_account_list_fields,
-            self._validate_account_list_fields_with_db
-        ]
-        for pipeline_func in pipeline:
-            error = pipeline_func()
+        deposit = self.db.get_deposits_instances(
+            None, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance,
+            deposit_number=self.deposit_number_edit.text()
+        )
+        if isinstance(deposit, str):
+            MainWindow.call_error_box(error_text=deposit)
+            return
+        if deposit:
+            error = self.account_manager.close_deposit(deposit[0], self.current_date)
             if error:
                 MainWindow.call_error_box(error_text=error)
                 return
-
-        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
-        MainWindow._clear_data_edits(self._get_mapper())
-        # валидация номера договора на корректность
-        # валидация есть ли такой договор в бд
-        # забрать вклад
-        pass
+            MainWindow.call_ok_box(ok_text="Депозит успешно отозван.")
+        # todo: тут надо очистить все поля
+        # MainWindow._clear_data_edits(self._get_mapper())
 
     def _close_bank_day_button_click(self):
         person_id = None  # get all records
@@ -117,6 +113,7 @@ class MainWindow(QMainWindow):
         self.account_manager.close_day(self.current_date, deposits)
         self.current_date += datetime.timedelta(days=1)
         self.db.update_current_date(self.current_date)
+        MainWindow.call_ok_box(ok_text="Банковский день завершен.")
 
     def _find_accounts_button_click(self):
         deposits = self._find_deposits()
