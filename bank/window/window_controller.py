@@ -18,6 +18,12 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidget
 import sys
 import os
 import datetime
+from enum import Enum
+
+
+class DepositType(Enum):
+    DEPOSIT = "Депозит"
+    CREDIT = "Кредит"
 
 
 class MainWindow(QMainWindow):
@@ -81,6 +87,25 @@ class MainWindow(QMainWindow):
         self.close_bank_day_button.clicked.connect(self._close_bank_day_button_click)
         self.pick_up_deposit_button.clicked.connect(self._pick_up_deposit_button_click)
         self.close_bank_month_button.clicked.connect(self._close_bank_month_button_click)
+
+        self.deposit_type_combobox.clear()
+        self.deposit_type_combobox.addItems([DepositType.DEPOSIT.value, DepositType.CREDIT.value])
+        self.deposit_type_combobox.currentTextChanged.connect(self._change_deposit_type)
+
+    def _set_deposit_labels(self, deposit_name, create_button, is_revocable):
+        self.is_revocable_label.setText(is_revocable)
+        self.deposit_label.setText(deposit_name)
+        self.create_deposit_button.setText(create_button)
+
+    def _change_deposit_type(self, value):
+        if value == DepositType.DEPOSIT.value:
+            self._set_deposit_labels("Депозит:", "Оформить вклад", "Отзывной:")
+            deposits = self.db.get_deposits()
+            fields_setter.set_combobox(self.deposit_combobox, deposits, "Депозит")
+        elif value == DepositType.CREDIT.value:
+            self._set_deposit_labels("Кредит:", "Оформить кредит", "Тип:")
+            credits_list = self.db.get_deposits(is_credit=1)
+            fields_setter.set_combobox(self.deposit_combobox, credits_list, "Кредит")
 
     def _close_bank_month_button_click(self):
         for i in range(30):

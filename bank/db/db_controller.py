@@ -300,7 +300,6 @@ class DBController:
         sql_request = f"SELECT * FROM {table_name}"
         if sql_where_params:
             sql_request += f" WHERE {sql_where_params}"
-
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
 
@@ -389,8 +388,18 @@ class DBController:
             return True
         return False
 
-    def get_deposits(self):
-        return self._get_name_list(db_names.DEPOSIT_TABLE)
+    def get_deposits(self, is_credit=0):
+        """
+        type 0 - дифференцированный
+             1 - ануированный
+        :param is_credit:
+        :return:
+        """
+        params = [
+            DBController._create_param_dict("type", is_credit, False),
+        ]
+        deposits = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
+        return DBController.get_names_from_values(deposits)
 
     def get_currencies(self):
         return self._get_name_list(db_names.CURRENCY_TABLE)
