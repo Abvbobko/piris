@@ -471,7 +471,8 @@ class DBController:
             return deposit[0]
         return None
 
-    def get_deposits_instances(self, client_id, create_account_entity_func, create_deposit_entity_func):
+    def get_deposits_instances(self, client_id,
+                               create_account_entity_func, create_deposit_entity_func, deposit_number=None):
         """Return dict {
             "records": [record_1, record_2, ...],
             "deposit_columns": (column_1_name, column_2_name, ...),
@@ -480,7 +481,16 @@ class DBController:
         :return:
         """
         result_deposit_list = []
-        deposits = self._get_all_clients_deposits(client_id)
+        if deposit_number:
+            params = [DBController._create_param_dict("contract_number", deposit_number, False)]
+            deposits = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
+            if not deposits:
+                return "Депозита с таким номером нет."
+            deposit = deposits[0]
+        elif client_id is not None:
+            deposits = self._get_all_clients_deposits(client_id)
+        else:
+            deposits = self._get_all_rows_from_table(db_names.CLIENT_DEPOSIT_TABLE)
         header = self.cursor.column_names
         for deposit in deposits:
             deposit_dict = DBController._convert_db_record_to_dict(deposit, header)

@@ -14,6 +14,11 @@ def set_deposit_fields(self):
     )
 
     set_string_edit(
+        self.deposit_number_edit, field_name="Номер договора", mask_regex=field_const.CONTRACT_NUMBER_MASK,
+        max_length=field_const.CONTRACT_NUMBER_MAX_LENGTH, can_be_empty=False
+    )
+
+    set_string_edit(
         self.client_id_edit, field_name="id клиента", mask_regex=field_const.ID_MASK,
         max_length=field_const.ID_MAX_LENGTH, can_be_empty=False
     )

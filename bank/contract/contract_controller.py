@@ -276,7 +276,7 @@ class ContractController:
         amount = current_account.get_debit()
         credit_account = deposit.get_credit_account()
         # amount + year percent / num of month
-        percent_amount = (amount * deposit.get_term() + amount) / 12
+        percent_amount = round((amount * deposit.get_term() + amount) / 12, 2)
         self.transfer_between_accounts(self.bdfa[currency_id], credit_account, percent_amount)
         self.transfer_between_accounts(credit_account, self.cash_register[currency_id], percent_amount)
         self._sub_from_cash_register(value=percent_amount, currency_id=currency_id)
@@ -300,9 +300,8 @@ class ContractController:
 
     def close_deposit(self, deposit, current_date):
         if deposit.get_is_revocable():
+            if deposit.get_end_date() < current_date:
+                return f"Депозит {deposit.get_contract_number()} уже закрыт."
             self._give_all_amount(deposit, current_date)
             return None
         return f"Депозит {deposit.get_contract_number()} не является отзывным."
-
-    # todo: забрать вклад
-

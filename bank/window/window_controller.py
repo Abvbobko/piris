@@ -79,9 +79,41 @@ class MainWindow(QMainWindow):
         self.bdfa_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.close_bank_day_button.clicked.connect(self._close_bank_day_button_click)
+        self.pick_up_deposit_button.clicked.connect(self._pick_up_deposit_button_click)
+
+    def _validate_account_list_fields(self):
+        string_data_edits = [self.deposit_number_edit]
+
+        error = prevalidator.list_validation_call(string_data_edits, prevalidator.validate_string_edit)
+        if error:
+            return error
+
+    def _validate_account_list_fields_with_db(self):
+        return None
+
+    def _pick_up_deposit_button_click(self):
+        pipeline = [
+            self._validate_account_list_fields,
+            self._validate_account_list_fields_with_db
+        ]
+        for pipeline_func in pipeline:
+            error = pipeline_func()
+            if error:
+                MainWindow.call_error_box(error_text=error)
+                return
+
+        MainWindow.call_ok_box(ok_text="Клиент успешно добавлен.")
+        MainWindow._clear_data_edits(self._get_mapper())
+        # валидация номера договора на корректность
+        # валидация есть ли такой договор в бд
+        # забрать вклад
+        pass
 
     def _close_bank_day_button_click(self):
-        deposits = self._find_deposits()
+        person_id = None  # get all records
+        deposits = self.db.get_deposits_instances(
+            person_id, self.account_manager.get_account_instance, self.account_manager.get_deposit_instance
+        )
         self.account_manager.close_day(self.current_date, deposits)
         self.current_date += datetime.timedelta(days=1)
         self.db.update_current_date(self.current_date)
@@ -106,8 +138,8 @@ class MainWindow(QMainWindow):
             for j in range(len(accounts[i])):
                 self.accounts_table.setItem(i, j, QTableWidgetItem(str(accounts[i][j])))
                 if header[j] == 'Дата окончания' and self.current_date > accounts[i][j]:
-                    # todo: test!!!
-                    self.accounts_table.item(i, j).setBackground(QtGui.QColor(102, 255, 102))
+                    for color_j in range(accounts[i]):
+                        self.accounts_table.item(i, color_j).setBackground(QtGui.QColor(102, 255, 102))
 
     def _find_deposits(self):
         edit_list = [self.deposit_client_id_edit]
