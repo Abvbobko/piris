@@ -20,6 +20,11 @@ class DBController:
             database=database
         )
 
+    def close_connection(self):
+        self.db.close()
+
+    """--- Client part ---"""
+
     def is_passport_number_exists(self, passport_series, passport_number, updating_mode=False, person_id=None):
         params = [
             DBController._create_param_dict("passport_series", passport_series, True),
@@ -31,16 +36,6 @@ class DBController:
                 if record[0] != person_id:
                     return True
         elif found_records:
-            return True
-        return False
-
-    def is_deposit_number_exists(self, deposit_number):
-        params = [
-            DBController._create_param_dict("contract_number", deposit_number, True)
-        ]
-        found_records = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
-
-        if found_records:
             return True
         return False
 
@@ -58,20 +53,6 @@ class DBController:
         elif found_records:
             return True
         return False
-
-    @staticmethod
-    def _quote_value(value, needs_quote_char):
-        if value is None:
-            return value
-        return f'"{value}"' if needs_quote_char else f'{value}'
-
-    @staticmethod
-    def _create_param_dict(field_name, value, need_quote_char):
-        return {
-            "field_name": field_name,
-            "field_value": value,
-            "quote_char": need_quote_char
-        }
 
     def insert_person(self, update_mode=False, person_id=None, **kwargs):
 
@@ -115,6 +96,98 @@ class DBController:
             return self._update_record(db_names.PERSON_TABLE, person_data, list_of_id_params)
 
         return self._write_to_db(db_names.PERSON_TABLE, person_data)
+
+    def get_person(self, person_id):
+        params = [{
+            "field_name": "idPerson",
+            "field_value": person_id,
+            "quote_char": False
+        }]
+        person = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
+        header = self.cursor.column_names
+        converted_records = self._convert_person_records(person, header)
+
+        return {
+            "columns": header,
+            "records": converted_records
+        }
+
+    def get_cities(self):
+        return self._get_name_list(db_names.CITY_TABLE)
+
+    def get_citizenships(self):
+        return self._get_name_list(db_names.CITIZENSHIP_TABLE)
+
+    def get_marital_status(self):
+        return self._get_name_list(db_names.MARITAL_STATUS_TABLE)
+
+    def get_disabilities(self):
+        return self._get_name_list(db_names.DISABILITY_TABLE)
+
+    def get_citizenship_by_id(self, citizenship_id):
+        return self._get_name_by_id(citizenship_id, db_names.CITIZENSHIP_TABLE)
+
+    def get_marital_status_by_id(self, marital_status_id):
+        return self._get_name_by_id(marital_status_id, db_names.MARITAL_STATUS_TABLE)
+
+    def get_disability_by_id(self, disability_id):
+        return self._get_name_by_id(disability_id, db_names.DISABILITY_TABLE)
+
+    def _convert_person_record(self, record, header):
+        converted_record = []
+        for i in range(len(record)):
+            if header[i] == "marital_status":
+                converted_record.append(self._get_name_by_id(record[i], db_names.MARITAL_STATUS_TABLE))
+            elif header[i] == "disability":
+                converted_record.append(self._get_name_by_id(record[i], db_names.DISABILITY_TABLE))
+            elif header[i] == "citizenship":
+                converted_record.append(self._get_name_by_id(record[i], db_names.CITIZENSHIP_TABLE))
+            elif header[i] == "residence_city" or header[i] == "registration_city":
+                converted_record.append(self._get_name_by_id(record[i], db_names.CITY_TABLE))
+            else:
+                converted_record.append(record[i])
+        return tuple(converted_record)
+
+    def delete_person_by_id(self, person_id):
+        return self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
+
+    def _convert_person_records(self, records, header):
+        converted_records = []
+        for record in records:
+            converted_records.append(self._convert_person_record(record, header))
+        return tuple(converted_records)
+
+    def get_clients(self):
+        """Return dict {
+            "columns": (column_1_name, column_2_name, ...)
+            "records": (record_1, record_2, ...)
+        }
+        where record_# is tuple (value_1, value_2, ...)
+        :return: dictionary with values
+        """
+        clients = self._get_all_rows_from_table(db_names.PERSON_TABLE)
+        header = self.cursor.column_names
+        converted_records = self._convert_person_records(clients, header)
+        return {
+            "columns": header,
+            "records": converted_records
+        }
+
+    """################## SPEC OPERATIONS ##################"""
+
+    @staticmethod
+    def _quote_value(value, needs_quote_char):
+        if value is None:
+            return value
+        return f'"{value}"' if needs_quote_char else f'{value}'
+
+    @staticmethod
+    def _create_param_dict(field_name, value, need_quote_char):
+        return {
+            "field_name": field_name,
+            "field_value": value,
+            "quote_char": need_quote_char
+        }
 
     def _update_record(self, table_name, list_of_params, list_of_id_params):
         """Update record in the db table
@@ -231,32 +304,6 @@ class DBController:
         self.cursor.execute(sql_request)
         return self.cursor.fetchall()
 
-    def get_person(self, person_id):
-        params = [{
-            "field_name": "idPerson",
-            "field_value": person_id,
-            "quote_char": False
-        }]
-        person = self._select_records_by_parameters(db_names.PERSON_TABLE, params)
-        header = self.cursor.column_names
-        converted_records = self._convert_person_records(person, header)
-
-        return {
-            "columns": header,
-            "records": converted_records
-        }
-
-    def close_connection(self):
-        self.db.close()
-
-    def is_deposit_revocable(self, deposit_name):
-        params = [DBController._create_param_dict("name", deposit_name, True)]
-        deposit = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
-        # 0 - возвратный
-        # 1 - невозвратный
-        is_revocable = True if deposit[0][2] == 1 else False
-        return is_revocable
-
     def get_tables(self):
         self.cursor.execute("SHOW TABLES")
         tables = [table for (table, ) in self.cursor.fetchall()]
@@ -280,14 +327,8 @@ class DBController:
                 break
         return value_name
 
-    def get_citizenship_by_id(self, citizenship_id):
-        return self._get_name_by_id(citizenship_id, db_names.CITIZENSHIP_TABLE)
-
-    def get_marital_status_by_id(self, marital_status_id):
-        return self._get_name_by_id(marital_status_id, db_names.MARITAL_STATUS_TABLE)
-
-    def get_disability_by_id(self, disability_id):
-        return self._get_name_by_id(disability_id, db_names.DISABILITY_TABLE)
+    def get_last_inserted_id(self):
+        return self.cursor.lastrowid
 
     @staticmethod
     def get_names_from_values(values):
@@ -299,17 +340,54 @@ class DBController:
     def _get_name_list(self, table_name):
         return DBController.get_names_from_values(self._get_all_rows_from_table(table_name))
 
-    def get_cities(self):
-        return self._get_name_list(db_names.CITY_TABLE)
+    def _delete_from_table_by_field(self, table_name, field_name, field_value):
+        try:
+            sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"
+            self.cursor.execute(sql_request)
+            self.db.commit()
+        except mysql.Error as error:
+            return str(error)
+        return None
 
-    def get_citizenships(self):
-        return self._get_name_list(db_names.CITIZENSHIP_TABLE)
+    @staticmethod
+    def _get_field_by_name(records, header, field_name):
+        column = []
+        if records and len(header) != len(records[0]):
+            raise Exception("Error. Sizes of header and records must be the same.")
+        for i in range(len(header)):
+            if header[i] == field_name:
+                column = [record[i] for record in records]
+                break
+        return column
 
-    def get_marital_status(self):
-        return self._get_name_list(db_names.MARITAL_STATUS_TABLE)
+    @staticmethod
+    def _get_first_list_value(some_list):
+        return None if not some_list else some_list[0]
 
-    def get_disabilities(self):
-        return self._get_name_list(db_names.DISABILITY_TABLE)
+    @staticmethod
+    def _get_field_value(records, header, field_name):
+        return DBController._get_first_list_value(DBController._get_field_by_name(records, header, field_name))
+
+    @staticmethod
+    def _convert_db_record_to_dict(record, header):
+        record_dict = {}
+        if len(header) != len(record):
+            raise Exception("Error. Sizes of header and record must be the same.")
+        for i in range(len(header)):
+            record_dict[header[i]] = record[i]
+        return record_dict
+
+    """################## DEPOSIT PART ##################"""
+
+    def is_deposit_number_exists(self, deposit_number):
+        params = [
+            DBController._create_param_dict("contract_number", deposit_number, True)
+        ]
+        found_records = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
+
+        if found_records:
+            return True
+        return False
 
     def get_deposits(self):
         return self._get_name_list(db_names.DEPOSIT_TABLE)
@@ -323,17 +401,6 @@ class DBController:
     def get_currency_name_by_id(self, currency_id):
         return self._get_name_by_id(currency_id, db_names.CURRENCY_TABLE)
 
-    @staticmethod
-    def _get_field_by_name(records, header, field_name):
-        column = []
-        if records and len(header) != len(records[0]):
-            raise Exception("Error. Sizes of header and records must be the same.")
-        for i in range(len(header)):
-            if header[i] == field_name:
-                column = [record[i] for record in records]
-                break
-        return column
-
     def get_terms(self, deposit_name, currency_name):
         deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
         currency_id = self._get_id_by_name(currency_name, db_names.CURRENCY_TABLE)
@@ -344,14 +411,6 @@ class DBController:
         programs = self._select_records_by_parameters(db_names.DEPOSIT_PROGRAM_TABLE, params)
         header = self.cursor.column_names
         return DBController._get_field_by_name(programs, header, "term")
-
-    @staticmethod
-    def _get_first_list_value(some_list):
-        return None if not some_list else some_list[0]
-
-    @staticmethod
-    def _get_field_value(records, header, field_name):
-        return DBController._get_first_list_value(DBController._get_field_by_name(records, header, field_name))
 
     def get_deposit_info(self, deposit_name, currency_name, term):
         deposit_id = self._get_id_by_name(deposit_name, db_names.DEPOSIT_TABLE)
@@ -402,51 +461,13 @@ class DBController:
             "records": bdfas
         }
 
-    def _convert_person_record(self, record, header):
-        converted_record = []
-        for i in range(len(record)):
-            if header[i] == "marital_status":
-                converted_record.append(self._get_name_by_id(record[i], db_names.MARITAL_STATUS_TABLE))
-            elif header[i] == "disability":
-                converted_record.append(self._get_name_by_id(record[i], db_names.DISABILITY_TABLE))
-            elif header[i] == "citizenship":
-                converted_record.append(self._get_name_by_id(record[i], db_names.CITIZENSHIP_TABLE))
-            elif header[i] == "residence_city" or header[i] == "registration_city":
-                converted_record.append(self._get_name_by_id(record[i], db_names.CITY_TABLE))
-            else:
-                converted_record.append(record[i])
-        return tuple(converted_record)
-
-    def _convert_person_records(self, records, header):
-        converted_records = []
-        for record in records:
-            converted_records.append(self._convert_person_record(record, header))
-        return tuple(converted_records)
-
-    def get_clients(self):
-        """Return dict {
-            "columns": (column_1_name, column_2_name, ...)
-            "records": (record_1, record_2, ...)
-        }
-        where record_# is tuple (value_1, value_2, ...)
-        :return: dictionary with values
-        """
-        clients = self._get_all_rows_from_table(db_names.PERSON_TABLE)
-        header = self.cursor.column_names
-        converted_records = self._convert_person_records(clients, header)
-        return {
-            "columns": header,
-            "records": converted_records
-        }
-
-    @staticmethod
-    def _convert_db_record_to_dict(record, header):
-        record_dict = {}
-        if len(header) != len(record):
-            raise Exception("Error. Sizes of header and record must be the same.")
-        for i in range(len(header)):
-            record_dict[header[i]] = record[i]
-        return record_dict
+    def is_deposit_revocable(self, deposit_name):
+        params = [DBController._create_param_dict("name", deposit_name, True)]
+        deposit = self._select_records_by_parameters(db_names.DEPOSIT_TABLE, params)
+        # 0 - возвратный
+        # 1 - невозвратный
+        is_revocable = True if deposit[0][2] == 1 else False
+        return is_revocable
 
     def _get_account_by_id(self, account_id):
         params = [DBController._create_param_dict("id", account_id, False)]
@@ -507,7 +528,9 @@ class DBController:
         return result_deposit_list
 
     def _get_all_clients_deposits(self, client_id):
-        params = [DBController._create_param_dict("client", client_id, False)]
+        params = [
+            DBController._create_param_dict("client", client_id, False)
+        ]
         deposits = self._select_records_by_parameters(db_names.CLIENT_DEPOSIT_TABLE, params)
         return deposits
 
@@ -532,18 +555,6 @@ class DBController:
             account_id=account_dict["id"]
         )
 
-    def _delete_from_table_by_field(self, table_name, field_name, field_value):
-        try:
-            sql_request = f"DELETE FROM {table_name} WHERE {field_name}={field_value}"
-            self.cursor.execute(sql_request)
-            self.db.commit()
-        except mysql.Error as error:
-            return str(error)
-        return None
-
-    def delete_person_by_id(self, person_id):
-        return self._delete_from_table_by_field(db_names.PERSON_TABLE, "idPerson", person_id)
-
     def get_current_date(self):
         params = [DBController._create_param_dict("id", db_names.CURRENT_DATE_ID, False)]
         curr_date = self._select_records_by_parameters(db_names.CURRENT_DATE_TABLE, params)
@@ -556,7 +567,6 @@ class DBController:
 
     def update_deposit_end_date(self, current_account_id, credit_account_id, new_end_date):
         params = [DBController._create_param_dict("deposit_end_date", new_end_date, True)]
-        print("!!!!!!!!!!!!!!!!!", new_end_date)
         id_params = [
             DBController._create_param_dict("current_account", current_account_id, False),
             DBController._create_param_dict("credit_account", credit_account_id, False)
@@ -617,9 +627,6 @@ class DBController:
             return self._update_record(db_names.CLIENT_DEPOSIT_TABLE, account_data, id_params)
 
         return self._write_to_db(db_names.CLIENT_DEPOSIT_TABLE, account_data)
-
-    def get_last_inserted_id(self):
-        return self.cursor.lastrowid
 
 
 if __name__ == '__main__':

@@ -10,12 +10,11 @@ class ContractController:
         self.db = db
         self.bdfa = self._load_bdfas()
         self.cash_register = self._load_cash_registers()
-        self.log_file = "../transactions.txt"
+        self.log_file = const.LOG_FILE_PATH
 
     @staticmethod
     def _convert_account_to_dict(record, header):
         result = {}
-        print(header)
         for i in range(len(header)):
             result[header[i]] = record[i]
         return result
@@ -62,26 +61,32 @@ class ContractController:
     def _get_currency_name_by_id(self, currency_id):
         return self.db.get_currency_name_by_id(currency_id)
 
-    def _add_to_cash_register(self, value, currency_id, log_file, current_date):
+    def _log_cash_register_transact(self, log_file, date, currency_id, amount, way="to"):
         with open(log_file, 'a') as f:
-            print(self.cash_register)
-            f.write(f"date: {current_date}, to: {self.cash_register[currency_id].get_account_number()}, " +
-                    f"amount: {value}\n")
+            f.write(f"date: {date}, {way}: {self.cash_register[currency_id].get_account_number()}, " +
+                    f"amount: {amount}\n")
+
+    def _add_to_cash_register(self, value, currency_id, log_file, current_date):
+        self._log_cash_register_transact(self.log_file, current_date, currency_id, value, "to")
         self.cash_register[currency_id].add_amount(value)
 
     def _sub_from_cash_register(self, value, currency_id, log_file, current_date):
-        with open(log_file, 'a') as f:
-            f.write(f"date: {current_date}, from: {self.cash_register[currency_id].get_account_number()}," +
-                    f" amount: {value}\n")
+        self._log_cash_register_transact(self.log_file, current_date, currency_id, value, "from")
         self.cash_register[currency_id].sub_amount(value)
+
+    @staticmethod
+    def _log_transfer(log_file, date, account_from_number, account_to_number, amount):
+        with open(log_file, 'a') as f:
+            f.write(f"date: {date}, from: {account_from_number}," +
+                    f" to: {account_to_number}, amount: {amount}\n")
 
     @staticmethod
     def transfer_between_accounts(account_a: accounts.ClientAccount, account_b: accounts.ClientAccount,
                                   amount, log_file, date):
         """Передать сумму от a к b"""
-        with open(log_file, 'a') as f:
-            f.write(f"date: {date}, from: {account_a.get_account_number()}," +
-                    f" to: {account_b.get_account_number()}, amount: {amount}\n")
+        ContractController._log_transfer(log_file, date,
+                                         account_a.get_account_number(), account_b.get_account_number(),
+                                         amount)
         account_a.sub_amount(amount)
         account_b.add_amount(amount)
 
