@@ -71,7 +71,7 @@ class ContractController:
 
     def _sub_from_cash_register(self, value, currency_id, log_file, current_date):
         with open(log_file, 'a') as f:
-            f.write(f"date: {current_date}, to: {self.cash_register[currency_id].get_account_number()}," +
+            f.write(f"date: {current_date}, from: {self.cash_register[currency_id].get_account_number()}," +
                     f" amount: {value}\n")
         self.cash_register[currency_id].sub_amount(value)
 
