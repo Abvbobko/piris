@@ -26,6 +26,11 @@ class DepositType(Enum):
     CREDIT = "Кредит"
 
 
+class CreditType(Enum):
+    DIFF = "Дифференц."
+    ANN = "Аннуитет."
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -94,6 +99,84 @@ class MainWindow(QMainWindow):
         # 1 - credit
         self.deposit_type_combobox.addItems([DepositType.DEPOSIT.value, DepositType.CREDIT.value])
         self.deposit_type_combobox.currentTextChanged.connect(self._change_deposit_type)
+
+        self.calculate_button.clicked.connect(self._calculate_button_click)
+        fields_setter.set_string_edit(
+            self.calc_amount_edit, field_name="Сумма", mask_regex=field_const.INCOME_MASK,
+            max_length=field_const.INCOME_MAX_LENGTH, can_be_empty=False
+        )
+        fields_setter.set_string_edit(
+            self.calc_rate_edit, field_name="Ставка", mask_regex=field_const.RATE_MASK,
+            max_length=field_const.RATE_LENGTH, can_be_empty=False
+        )
+        fields_setter.set_string_edit(
+            self.calc_period_edit, field_name="Срок", mask_regex=field_const.MONTH_TERM_MASK,
+            max_length=field_const.MONTH_TERM_LENGTH, can_be_empty=False
+        )
+        self.calc_credit_type_combobox.addItems([CreditType.DIFF.value, CreditType.ANN.value])
+
+    def _validate_calc_edits(self):
+        string_data_edits = [
+            self.calc_amount_edit,
+            self.calc_rate_edit,
+            self.calc_period_edit
+        ]
+        error = prevalidator.list_validation_call(string_data_edits, prevalidator.validate_string_edit)
+        if error:
+            return error
+        return None
+
+    def _calculate_diff_credit_values(self, amount, rate, period):
+        result_list = []
+        paid = 0
+        for month in range(1, period+1):
+            main, percent = self.account_manager.calculate_differentiated_amount(
+                amount, rate=rate, paid_amount=paid, term=period
+            )
+            paid += main
+            result_list.append([month, main, percent])
+        return result_list
+
+    def _calculate_ann_credit_value(self, amount, rate, period):
+        result_list = []
+        for month in range(1, period + 1):
+            main, percent = self.account_manager.calculate_annuity_amount(amount, num_of_month=period, rate=rate)
+            result_list.append([month, main, percent])
+        main_sum = 0
+        percent_sum = 0
+        for result in result_list:
+            main_sum += result[1]
+            percent_sum += result[2]
+        result_list.append(["Итого:", amount, round(percent_sum, 2)])
+        return result_list
+
+    def _calculate_button_click(self):
+        pipeline = [self._validate_calc_edits]
+        for pipeline_func in pipeline:
+            error = pipeline_func()
+            if error:
+                MainWindow.call_error_box(error_text=error)
+                return
+
+        amount = float(self.calc_amount_edit.text())
+        rate = float(self.calc_rate_edit.text())
+        period = int(self.calc_period_edit.text())
+        credit_type = self.calc_credit_type_combobox.currentText()
+        if credit_type == CreditType.DIFF.value:
+            values = self._calculate_diff_credit_values(amount, rate, period)
+        else:
+            values = self._calculate_ann_credit_value(amount, rate, period)
+
+        header = self.account_manager.get_calculated_credit_header()
+        self.calculated_credit_table.setColumnCount(len(header))
+        self.calculated_credit_table.setRowCount(len(values))
+        self.calculated_credit_table.setHorizontalHeaderLabels(header)
+        if len(values) == 0:
+            return
+
+        for i in range(len(values)):
+            for j in range(len(values[i])):
+                self.calculated_credit_table.setItem(i, j, QTableWidgetItem(str(values[i][j])))
 
     def _set_deposit_labels(self, deposit_name, create_button, is_revocable):
         self.is_revocable_label.setText(is_revocable)

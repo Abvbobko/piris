@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="adding_tab">
      <attribute name="title">
@@ -1259,6 +1259,126 @@
       </property>
       <property name="text">
        <string>Закрытие банковского месяца</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="credit_calculation_tab">
+     <attribute name="title">
+      <string>Калькулятор</string>
+     </attribute>
+     <widget class="QLabel" name="calc_amount_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>47</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Сумма:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="calc_rate_label">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>47</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Ставка:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="calc_period_label">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>10</y>
+        <width>81</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Срок (мес.):</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="calc_amount_edit">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>10</y>
+        <width>113</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="calc_rate_edit">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>10</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="calc_period_edit">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>10</y>
+        <width>81</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="calculate_button">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>40</y>
+        <width>151</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Рассчитать</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="calculated_credit_table">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>80</y>
+        <width>531</width>
+        <height>461</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="calc_credit_type_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Вид:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="calc_credit_type_combobox">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>40</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
       </property>
      </widget>
     </widget>

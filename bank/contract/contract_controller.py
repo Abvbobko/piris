@@ -359,25 +359,23 @@ class ContractController:
     @staticmethod
     def calculate_annuity_amount(start_amount, num_of_month, rate):
         i = rate / (num_of_month*100)
-        k = (i*(1+i)**12)/((1+i)**12 - 1)
-        return round(start_amount/num_of_month, 2), round(k * start_amount, 2)
+        k = (i*(1+i)**num_of_month)/((1+i)**num_of_month - 1)
+        return round(start_amount/num_of_month, 2), round(k * start_amount - start_amount/num_of_month, 2)
 
     @staticmethod
-    def calculate_differentiated_amount(start_amount, end_date, current_date, rate, paid_amount):
+    def calculate_differentiated_amount(start_amount, rate, paid_amount, term):
         """
 
         :param start_amount:
-        :param end_date:
-        :param current_date:
         :param rate:
         :param paid_amount:
         :return: основной, процентный
         """
         # paid - выплаченная часть кредита
         outstanding_balance = start_amount - paid_amount  # остаток задолженности
-        remaining_months = (end_date - current_date).days // 30
+        # remaining_months = remaining_month if remaining_month else (end_date - current_date).days // 30
         month_rate = rate / (12*100)
-        return round(outstanding_balance*1/remaining_months, 2), round(outstanding_balance*month_rate, 2)
+        return round(outstanding_balance/term, 2), round(outstanding_balance*month_rate, 2)
 
     def _close_credit(self, credit):
         pass
@@ -388,10 +386,9 @@ class ContractController:
             # diff
             main, percent = ContractController.calculate_differentiated_amount(
                 credit.get_current_account().get_debit(),
-                credit.get_end_date(),
-                current_date,
                 credit.get_rate(),
-                credit.get_credit_account().get_debit()
+                credit.get_credit_account().get_debit(),
+                credit.get_term()
             )
         else:
             # ann
@@ -443,3 +440,7 @@ class ContractController:
             self._give_all_amount(deposit, current_date)
             return None
         return f"Депозит {deposit.get_contract_number()} не является отзывным."
+
+    @staticmethod
+    def get_calculated_credit_header():
+        return ["Месяц", "Основная сумма", "Проценты"]
